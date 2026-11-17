@@ -1,0 +1,82 @@
+// ForgeGradle 2.3 + plugin de LiteLoader: compila con nombres MCP y reofusca al final.
+// Requiere Gradle 4.9 (wrapper) y Java 8:  JAVA_HOME=/usr/lib/jvm/java-8-openjdk ./gradlew build
+buildscript {
+    repositories {
+        mavenCentral()
+        maven { url = 'https://maven.minecraftforge.net/' }
+        maven { url = 'https://repo.spongepowered.org/maven' }
+    }
+    dependencies {
+        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
+    }
+}
+
+apply plugin: 'net.minecraftforge.gradle.liteloader'
+
+version = '0.25.0'
+group = 'dev.litbuild'
+archivesBaseName = 'litbuild'
+sourceCompatibility = targetCompatibility = '1.8'
+
+minecraft {
+    version = '1.12.2'
+    mappings = 'snapshot_20170919'
+    runDir = 'run'
+}
+
+litemod {
+    json {
+        name = 'litbuild'
+        displayName = 'LitBuild'
+        version = project.version
+        author = 'judamar'
+        mcversion = '1.12.2'
+        mixinConfigs = ['mixins.litbuild.json']
+    }
+}
+
+repositories {
+    mavenCentral()
+}
+
+// Sin procesador de anotaciones de Mixin: el refmap (src/main/resources/mixins.litbuild.refmap.json) va a mano.
+tasks.withType(JavaCompile) {
+    options.compilerArgs += ['-proc:none']
+}
+
+// Librerías empaquetadas dentro del jar del mod (imgui-java + sus nativas).
+configurations {
+    shade
+    compile.extendsFrom shade
+}
+
+def imguiVersion = '1.92.7.1'
+dependencies {
+    shade "io.github.spair:imgui-java-binding:${imguiVersion}"
+    shade "io.github.spair:imgui-java-natives-linux:${imguiVersion}"
+    shade "io.github.spair:imgui-java-natives-windows:${imguiVersion}"
+    shade "org.luaj:luaj-jse:3.0.1"   // Script Brush: intérprete de Lua en Java puro (MIT)
+}
+
+jar {
+    from litemod.outputs   // litemod.json: el plugin lo genera pero no lo mete en el jar solo
+    from({ configurations.shade.collect { zipTree(it) } }) {
+        exclude 'META-INF/MANIFEST.MF', 'META-INF/*.SF', 'META-INF/*.RSA', 'META-INF/*.DSA'
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Copia el jar reofuscado a la instancia de pruebas de Prism.
+task installMod(dependsOn: 'build') {
+    doLast {
+        def dest = file("${prismInstance}/.minecraft/mods")
+        dest.mkdirs()
+        delete fileTree(dir: dest, include: "mod-${archivesBaseName}-*.litemod")
+        delete fileTree(dir: dest, include: "mod-axiomlite-*.litemod")   // nombre anterior del mod
+        copy {
+            from jar.archivePath
+            into dest
+        }
+        println "Instalado ${jar.archivePath.name} en ${dest}"
+    }
+}

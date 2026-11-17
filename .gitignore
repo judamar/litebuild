@@ -1,0 +1,21 @@
+# Gradle / ForgeGradle
+.gradle/
+build/
+build.number
+run/
+out/
+
+# Registros
+*.log
+
+# IDE
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+
+# Sistema
+.DS_Store
+Thumbs.db
