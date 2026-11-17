@@ -24,6 +24,8 @@ public final class Placement {
     public static final ImBoolean PASTE_ENTITIES = new ImBoolean(true);
     /** Merge Blocks: al pegar, losas contrarias forman losa doble y la nieve se suma. */
     public static final ImBoolean MERGE = new ImBoolean(false);
+    /** Previsualiza el Placement con los bloques (translúcidos) y no solo con la caja. */
+    public static final ImBoolean PREVIEW = new ImBoolean(true);
     /** El gizmo usa los ejes propios de la copia girada (Local) en vez de los del mundo (Global). */
     public static final ImBoolean LOCAL = new ImBoolean(false);
     /** Al girar con ángulos libres: RotSprite (ampliar con bordes, girar y reducir) en vez del vecino más cercano. */
@@ -43,6 +45,7 @@ public final class Placement {
     public static void cancel() {
         active = false;
         shape = null;
+        PlacementPreview.release();
     }
 
     public static void rotate() {

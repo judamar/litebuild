@@ -3133,6 +3133,9 @@ public class EditorScreen extends GuiScreen {
             ImGui.checkbox("Keep Existing", Placement.KEEP_EXISTING);
             ImGui.sameLine();
             ImGui.checkbox("Paste Air", Placement.PASTE_AIR);
+            ImGui.checkbox("Preview blocks", Placement.PREVIEW);
+            tip("Dibuja la copia con sus bloques, translúcidos, además de la caja. Hasta " + PlacementPreview.MAX_BLOCKS
+                    + " bloques; con más, o con un fallo de renderizado, solo se ve la caja. Los cofres y carteles no se dibujan.");
             ImGui.checkbox("Local gizmo", Placement.LOCAL);
             tip("Global: los ejes del gizmo son los del mundo. Local: siguen la rotación de la copia (flechas, planos y anillos); los cubitos de escala siempre siguen los ejes propios de la copia.");
             ImGui.checkbox("Merge Blocks", Placement.MERGE);

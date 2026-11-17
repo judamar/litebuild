@@ -54,6 +54,7 @@ public final class WorldOverlay {
             int x = Placement.pos[0];
             int y = Placement.pos[1];
             int z = Placement.pos[2];
+            PlacementPreview.draw(Placement.shape, x, y, z);
             box(x, y, z, x + Placement.shape.sx, y + Placement.shape.sy, z + Placement.shape.sz, 1f, 0.6f, 0.1f);
         }
         if (!Ruler.points.isEmpty() && Ruler.show.get()) {
