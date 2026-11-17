@@ -140,6 +140,28 @@ public final class Terrain {
         }
     }
 
+    /** Heightmap de imagen para Elevation: el brillo (0-1) de cada píxel es cuánto afecta el pincel en ese punto. */
+    public static final class Heightmap {
+        final float[] data;
+        final int w, h;
+
+        public Heightmap(float[] data, int w, int h) {
+            this.data = data;
+            this.w = w;
+            this.h = h;
+        }
+
+        /** El brillo en la posición (dx, dz) dentro del cuadrado del pincel de radio r (el borde a borde del círculo cubre la imagen). */
+        float at(int dx, int dz, int r) {
+            double u = (dx + r + 0.5) / (2.0 * r + 1), v = (dz + r + 0.5) / (2.0 * r + 1);
+            int px = Math.max(0, Math.min(w - 1, (int) (u * w))), py = Math.max(0, Math.min(h - 1, (int) (v * h)));
+            return data[py * w + px];
+        }
+    }
+
+    /** El heightmap activo de Elevation (null = el desvanecido suave de siempre). */
+    public static volatile Heightmap heightmap;
+
     public static final int RAISE = 0, LOWER = 1, FLATTEN = 2;
     public static final String[] ELEVATION_MODES = {"Raise", "Lower", "Flatten"};
 
@@ -162,7 +184,8 @@ public final class Terrain {
                 if (dist > lim) {
                     continue;
                 }
-                double weight = 0.5 + 0.5 * Math.cos(Math.PI * dist / lim);
+                Heightmap hm = heightmap;
+                double weight = hm != null ? hm.at(dx, dz, radius) : 0.5 + 0.5 * Math.cos(Math.PI * dist / lim);
                 int x = cx + dx, z = cz + dz;
                 int top = surfaceY(w, x, z, yHi, yLo);
                 if (top < 0 || (mask != null && !mask.test(w, x, top, z))) {

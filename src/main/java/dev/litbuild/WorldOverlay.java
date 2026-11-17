@@ -10,6 +10,8 @@ import net.minecraft.util.math.BlockPos;
 /** Dibuja en el mundo la selección y el bloque bajo el cursor. */
 public final class WorldOverlay {
     private static final double EPS = 0.002;
+    /** View > Show Selections. */
+    public static final imgui.type.ImBoolean showSelections = new imgui.type.ImBoolean(true);
 
     private WorldOverlay() {
     }
@@ -20,7 +22,7 @@ public final class WorldOverlay {
         if (!Selection.active && Targeting.hover == null && !Placement.active && Ruler.points.isEmpty() && !sym
                 && !BoxGizmo.visible && PathTool.nodes.isEmpty() && SlopeTool.target == null && !Modify.showPivot
                 && !(Annotations.show.get() && (!Annotations.items.isEmpty() || Annotations.current() != null))
-                && !BiomeView.active() && !Modelling.hasPoints()) {
+                && !BiomeView.active() && !Modelling.hasPoints() && BuilderTools.preview().isEmpty() && !BlockHighlights.any()) {
             return;
         }
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
@@ -39,7 +41,7 @@ public final class WorldOverlay {
 
         GL11.glPushMatrix();
         GL11.glTranslated(-Targeting.camX, -Targeting.camY, -Targeting.camZ);
-        if (Selection.active) {
+        if (Selection.active && showSelections.get()) {
             if (Selection.mask == null) {
                 box(Selection.min(0), Selection.min(1), Selection.min(2),
                         Selection.max(0) + 1, Selection.max(1) + 1, Selection.max(2) + 1, 0.2f, 0.75f, 1f);
@@ -53,7 +55,7 @@ public final class WorldOverlay {
             int z = Placement.pos[2];
             box(x, y, z, x + Placement.shape.sx, y + Placement.shape.sy, z + Placement.shape.sz, 1f, 0.6f, 0.1f);
         }
-        if (!Ruler.points.isEmpty()) {
+        if (!Ruler.points.isEmpty() && Ruler.show.get()) {
             ruler();
         }
         if (Modify.showPivot) {
@@ -75,6 +77,12 @@ public final class WorldOverlay {
         }
         if (BiomeView.active()) {
             BiomeView.render();
+        }
+        for (int[] b : BuilderTools.preview()) {
+            box(b[0], b[1], b[2], b[3], b[4], b[5], 1f, 0.6f, 0.1f);
+        }
+        if (BlockHighlights.any()) {
+            blockHighlights();
         }
         if (Annotations.show.get()) {
             annotations();
@@ -107,6 +115,20 @@ public final class WorldOverlay {
         }
         if (Annotations.current() != null) {
             annotation(Annotations.current());
+        }
+    }
+
+    /** Structure void (cian) y barreras (rojo) cercanos, de Edit Block Attributes. */
+    private static void blockHighlights() {
+        if (BuilderMode.showStructureVoid.get()) {
+            for (BlockPos p : BlockHighlights.voids) {
+                box(p.getX(), p.getY(), p.getZ(), p.getX() + 1, p.getY() + 1, p.getZ() + 1, 0.3f, 0.9f, 1f);
+            }
+        }
+        if (BuilderMode.showBarriers.get()) {
+            for (BlockPos p : BlockHighlights.barriers) {
+                box(p.getX(), p.getY(), p.getZ(), p.getX() + 1, p.getY() + 1, p.getZ() + 1, 1f, 0.25f, 0.2f);
+            }
         }
     }
 

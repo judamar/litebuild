@@ -33,6 +33,65 @@ public final class SelectionOps {
         }
     }
 
+    /** Expand (n > 0) o Shrink (n < 0): ensancha o estrecha la selección n bloques en todas las direcciones (por las 6 caras en máscaras). */
+    public static void offset(int n) {
+        if (!Selection.active || n == 0) {
+            return;
+        }
+        if (Selection.mask == null) {
+            int[] lo = {Selection.min(0), Math.max(0, Selection.min(1)), Selection.min(2)};
+            int[] hi = {Selection.max(0), Math.min(255, Selection.max(1)), Selection.max(2)};
+            for (int a = 0; a < 3; a++) {
+                if (n < 0 && hi[a] - lo[a] + 1 + 2 * n < 1) {
+                    EditEngine.status = "Shrink: la selección es demasiado pequeña";
+                    return;
+                }
+                lo[a] -= n;
+                hi[a] += n;
+            }
+            Selection.set(new BlockPos(lo[0], Math.max(0, lo[1]), lo[2]), new BlockPos(hi[0], Math.min(255, hi[1]), hi[2]));
+            EditEngine.status = (n > 0 ? "Expand" : "Shrink") + ": " + Selection.volume() + " bloques";
+            return;
+        }
+        Set<Long> cur = new HashSet<Long>(Selection.mask);
+        int[][] d = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+        for (int step = 0; step < Math.abs(n); step++) {
+            Set<Long> next = new HashSet<Long>();
+            if (n > 0) {
+                for (long k : cur) {
+                    next.add(k);
+                    BlockPos p = BlockPos.fromLong(k);
+                    for (int[] o : d) {
+                        int y = p.getY() + o[1];
+                        if (y >= 0 && y <= 255) {
+                            next.add(Selection.key(p.getX() + o[0], y, p.getZ() + o[2]));
+                        }
+                    }
+                }
+            } else {
+                for (long k : cur) {
+                    BlockPos p = BlockPos.fromLong(k);
+                    boolean keep = true;
+                    for (int[] o : d) {
+                        if (!cur.contains(Selection.key(p.getX() + o[0], p.getY() + o[1], p.getZ() + o[2]))) {
+                            keep = false;
+                            break;
+                        }
+                    }
+                    if (keep) {
+                        next.add(k);
+                    }
+                }
+            }
+            if (next.size() > EditEngine.MAX_BLOCKS) {
+                EditEngine.status = "Expand: el resultado es demasiado grande";
+                return;
+            }
+            cur = next;
+        }
+        finish(n > 0 ? "Expand" : "Shrink", cur);
+    }
+
     /** Convierte una selección cóncava en su cierre convexo (todos los bloques dentro del casco de la selección). */
     public static void convexHull() {
         if (!Selection.active) {

@@ -1,6 +1,8 @@
 package dev.litbuild;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import net.minecraft.block.Block;
@@ -23,6 +25,10 @@ public final class Clipboard {
     public final int sx, sy, sz;
     public final int[] states;
     public final Map<Integer, NBTTagCompound> tiles;
+    /** Entidades copiadas (Copy With Entities): NBT con la posición ("Pos") relativa a la esquina mínima y sin UUID. */
+    public List<NBTTagCompound> entities = new ArrayList<NBTTagCompound>();
+    /** Copiado con Copy With Air: al pegar, el aire también sustituye lo que hay. */
+    public boolean withAir;
 
     public Clipboard(int sx, int sy, int sz, int[] states, Map<Integer, NBTTagCompound> tiles) {
         this.sx = sx;
@@ -67,7 +73,49 @@ public final class Clipboard {
                 }
             }
         }
-        return new Clipboard(nsx, sy, nsz, out, t);
+        Clipboard r = new Clipboard(nsx, sy, nsz, out, t);
+        r.withAir = withAir;
+        for (NBTTagCompound e : entities) {
+            r.entities.add(moved(e, true, false, sz, sx));
+        }
+        return r;
+    }
+
+    /**
+     * Copia de una entidad girada 90° en sentido horario (o espejada) dentro de una caja de ancho w y fondo d; rotate = giro,
+     * si no mirror: alongX voltea X (si no, Z). Ajusta la posición y el yaw.
+     */
+    private static NBTTagCompound moved(NBTTagCompound src, boolean rotate, boolean alongX, int w, int d) {
+        NBTTagCompound e = src.copy();
+        net.minecraft.nbt.NBTTagList pos = e.getTagList("Pos", 6);
+        double x = pos.getDoubleAt(0), y = pos.getDoubleAt(1), z = pos.getDoubleAt(2);
+        net.minecraft.nbt.NBTTagList rot = e.getTagList("Rotation", 5);
+        float yaw = rot.tagCount() > 0 ? rot.getFloatAt(0) : 0f, pitch = rot.tagCount() > 1 ? rot.getFloatAt(1) : 0f;
+        double nx, nz;
+        if (rotate) {
+            // w es el fondo de la caja de origen: x' = w - z, z' = x
+            nx = w - z;
+            nz = x;
+            yaw += 90f;
+        } else if (alongX) {
+            nx = w - x;
+            nz = z;
+            yaw = -yaw;
+        } else {
+            nx = x;
+            nz = d - z;
+            yaw = 180f - yaw;
+        }
+        net.minecraft.nbt.NBTTagList np = new net.minecraft.nbt.NBTTagList();
+        np.appendTag(new net.minecraft.nbt.NBTTagDouble(nx));
+        np.appendTag(new net.minecraft.nbt.NBTTagDouble(y));
+        np.appendTag(new net.minecraft.nbt.NBTTagDouble(nz));
+        e.setTag("Pos", np);
+        net.minecraft.nbt.NBTTagList nr = new net.minecraft.nbt.NBTTagList();
+        nr.appendTag(new net.minecraft.nbt.NBTTagFloat(yaw));
+        nr.appendTag(new net.minecraft.nbt.NBTTagFloat(pitch));
+        e.setTag("Rotation", nr);
+        return e;
     }
 
     /**
@@ -190,7 +238,12 @@ public final class Clipboard {
                 }
             }
         }
-        return new Clipboard(sx, sy, sz, out, t);
+        Clipboard r = new Clipboard(sx, sy, sz, out, t);
+        r.withAir = withAir;
+        for (NBTTagCompound e : entities) {
+            r.entities.add(moved(e, false, alongX, sx, sz));
+        }
+        return r;
     }
 
     private static int map(Map<Integer, Integer> cache, int id, boolean rotate, boolean alongX) {

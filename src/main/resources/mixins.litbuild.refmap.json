@@ -12,6 +12,18 @@
     },
     "dev/litbuild/mixin/MixinBlockFarmland": {
       "onFallenUpon": "Laqn;a(Lamu;Let;Lvg;F)V"
+    },
+    "dev/litbuild/mixin/MixinMinecraft": {
+      "clickMouse": "Lbib;aA()V",
+      "rightClickMouse": "Lbib;aB()V",
+      "middleClickMouse": "Lbib;aH()V",
+      "sendClickBlockToController": "Lbib;b(Z)V"
+    },
+    "dev/litbuild/mixin/MixinInventoryPlayer": {
+      "changeCurrentItem": "Laec;f(I)V"
+    },
+    "dev/litbuild/mixin/MixinPlayerControllerMP": {
+      "getBlockReachDistance": "Lbsa;d()F"
     }
   },
   "data": {
@@ -28,6 +40,18 @@
       },
       "dev/litbuild/mixin/MixinBlockFarmland": {
         "onFallenUpon": "Laqn;a(Lamu;Let;Lvg;F)V"
+      },
+      "dev/litbuild/mixin/MixinMinecraft": {
+        "clickMouse": "Lbib;aA()V",
+        "rightClickMouse": "Lbib;aB()V",
+        "middleClickMouse": "Lbib;aH()V",
+        "sendClickBlockToController": "Lbib;b(Z)V"
+      },
+      "dev/litbuild/mixin/MixinInventoryPlayer": {
+        "changeCurrentItem": "Laec;f(I)V"
+      },
+      "dev/litbuild/mixin/MixinPlayerControllerMP": {
+        "getBlockReachDistance": "Lbsa;d()F"
       }
     }
   }

@@ -85,10 +85,17 @@ public class EditorScreen extends GuiScreen {
     private final ImBoolean showTextAnn = new ImBoolean(false);
     private final ImBoolean showStyle = new ImBoolean(false);
     private final ImBoolean showRef = new ImBoolean(false);
-    private final ImString refSource = new ImString("", 512);
-    private final float[] refOpacity = {1f};
-    private final ImBoolean refNearest = new ImBoolean(false);
-    private ImageCache.Entry refEntry;
+    private final ImBoolean showColourPicker = new ImBoolean(false);
+    private final ImBoolean showGradientHelper = new ImBoolean(false);
+    private final ImBoolean showAbout = new ImBoolean(false);
+    private final ImBoolean invertCamera = new ImBoolean(false);
+    private final int[] offsetAmount = {1};
+    private final ImString heightmapSource = new ImString("", 512);
+    private ImageCache.Entry heightmapEntry;
+    private Clipboard dupFrom;
+    private boolean dupPending;
+    private Vec3d arcPivot;
+    private double arcDist;
     private final ImBoolean visualizeBiome = new ImBoolean(true);
     private final ImInt shadeLightsMode = new ImInt(0);
     private final ImBoolean shadeSun = new ImBoolean(true);
@@ -100,7 +107,6 @@ public class EditorScreen extends GuiScreen {
     private final ImString presetName = new ImString("", 48);
     private final ImString keybindFilter = new ImString("", 32);
     private int lastTool, prevTool;
-    private float savedGamma = -1f;
     private final ImInt shadeFrom = new ImInt(0);
     private final ImInt shadePalette = new ImInt(0);
     private final float[] shadeAz = {135f}, shadeEl = {45f}, shadeAmbient = {0.25f}, shadeAo = {0.5f},
@@ -262,10 +268,6 @@ public class EditorScreen extends GuiScreen {
         Keyboard.enableRepeatEvents(false);
         Blueprints.free(bpThumbTex);
         bpThumbTex = 0;
-        if (savedGamma >= 0f) {
-            mc.gameSettings.gammaSetting = savedGamma;
-            savedGamma = -1f;
-        }
         BiomeView.visualize = false;
         if (stroking) {
             endStroke();
@@ -409,15 +411,62 @@ public class EditorScreen extends GuiScreen {
         if (showRef.get()) {
             referenceWindow();
         }
+        if (showColourPicker.get()) {
+            ColourTools.pickerWindow(showColourPicker, activeState, new ColourTools.Sink() {
+                @Override
+                public void accept(IBlockState st) {
+                    activeId.set(String.valueOf(Block.REGISTRY.getNameForObject(st.getBlock())));
+                    activeMeta[0] = st.getBlock().getMetaFromState(st);
+                }
+            }, "lo pone como Active Block");
+        }
+        if (showGradientHelper.get()) {
+            ColourTools.gradientWindow(showGradientHelper, new ColourTools.ListSink() {
+                @Override
+                public void accept(List<IBlockState> states) {
+                    Hotbars.fill(states);
+                }
+            }, new ColourTools.ListSink() {
+                @Override
+                public void accept(List<IBlockState> states) {
+                    gradRows.clear();
+                    for (IBlockState st : states) {
+                        NoiseRow r = new NoiseRow(String.valueOf(Block.REGISTRY.getNameForObject(st.getBlock())));
+                        r.meta[0] = st.getBlock().getMetaFromState(st);
+                        gradRows.add(r);
+                    }
+                    tool = GRADIENT;
+                    EditEngine.status = "Gradient Painter: " + states.size() + " bloques del Gradient Helper";
+                }
+            });
+        }
+        if (showAbout.get()) {
+            if (ImGui.begin("About LitBuild", showAbout)) {
+                Txt.text("LitBuild " + new LiteModLitBuild().getVersion());
+                Txt.wrapped("Editor de mundo para Minecraft 1.12.2 con LiteLoader, hecho desde cero a partir de la documentación pública de Axiom. Solo cliente: edita el mundo del servidor integrado (un jugador).");
+                Txt.wrapped("Builder Mode: tecla B o tocar Alt (Menú de Builder), Alt + rueda para elegir herramienta. Editor: Right Shift.");
+            }
+            ImGui.end();
+        }
+        dupCheck();
         BiomeView.visualize = tool == BIOME && visualizeBiome.get();
         FluidOpacity.tick(UiSettings.fluidOpacity);
         if (showStyle.get()) {
             if (ImGui.begin("Style Editor", showStyle)) {
+                int tc = buttonRow("Export theme", "Import theme", "Reset");
+                if (tc == 0) {
+                    GuiScreen.setClipboardString(exportTheme());
+                    EditEngine.status = "Tema copiado al portapapeles";
+                } else if (tc == 1) {
+                    EditEngine.status = importTheme(GuiScreen.getClipboardString())
+                            ? "Tema importado" : "El portapapeles no tiene un tema";
+                } else if (tc == 2) {
+                    Theme.apply(UiSettings.theme);
+                }
                 ImGui.showStyleEditor();
             }
             ImGui.end();
         }
-        applyBrightness();
         drawAnnotationTexts();
         if (showBlueprints.get()) {
             blueprintsWindow();
@@ -578,6 +627,21 @@ public class EditorScreen extends GuiScreen {
             if (ImGui.menuItem("Copy", "Ctrl+C", false, Selection.active)) {
                 EditEngine.copy(false);
             }
+            if (ImGui.beginMenu("Copy With...", Selection.active)) {
+                if (ImGui.menuItem("Entities")) {
+                    EditEngine.copy(false, true, false);
+                }
+                if (ImGui.menuItem("Air")) {
+                    EditEngine.copy(false, false, true);
+                }
+                if (ImGui.menuItem("Entities and Air")) {
+                    EditEngine.copy(false, true, true);
+                }
+                ImGui.endMenu();
+            }
+            if (ImGui.menuItem("Duplicate", "Ctrl+J", false, Selection.active && !Placement.active)) {
+                duplicate();
+            }
             if (ImGui.menuItem("Paste", "Ctrl+V", false, Clipboard.current != null && !Placement.active)) {
                 startPaste();
             }
@@ -586,6 +650,12 @@ public class EditorScreen extends GuiScreen {
         if (ImGui.beginMenu("Select")) {
             if (ImGui.menuItem("Clear", "", false, Selection.active)) {
                 Selection.clear();
+            }
+            if (ImGui.menuItem("Expand", "", false, Selection.active)) {
+                SelectionOps.offset(offsetAmount[0]);
+            }
+            if (ImGui.menuItem("Shrink", "", false, Selection.active)) {
+                SelectionOps.offset(-offsetAmount[0]);
             }
             if (ImGui.menuItem("Convex Hull", "", false, Selection.active && Selection.mask != null)) {
                 SelectionOps.convexHull();
@@ -694,6 +764,10 @@ public class EditorScreen extends GuiScreen {
                 ImGuiBackend.setFontSize(fontUi[0]);
                 UiSettings.save();
             }
+            ImGui.menuItem("Show Selections", "", WorldOverlay.showSelections);
+            ImGui.menuItem("Show Ruler", "", Ruler.show);
+            ImGui.menuItem("Show Key Presses", "", BuilderMode.showKeys);
+            ImGui.menuItem("Invert Camera Rotate", "", invertCamera);
             ImGui.menuItem("Show Biomes", "", BiomeView.show);
             float[] fo = {UiSettings.fluidOpacity < 0 ? 0.7f : UiSettings.fluidOpacity};
             ImGui.setNextItemWidth(160);
@@ -734,7 +808,35 @@ public class EditorScreen extends GuiScreen {
             ImGui.menuItem("Text Annotations", "", showTextAnn);
             ImGui.menuItem("Style Editor", "", showStyle);
             ImGui.menuItem("Keybinds", "", showKeybinds);
+            ImGui.menuItem("Colour Picker", "", showColourPicker);
+            ImGui.menuItem("Gradient Helper", "", showGradientHelper);
             ImGui.menuItem("ImGui demo", "", showDemo);
+            ImGui.separator();
+            if (ImGui.menuItem("Store Current Layout as Default")) {
+                storeLayout();
+            }
+            if (ImGui.menuItem("Restore Default Layout")) {
+                restoreLayout();
+            }
+            if (ImGui.menuItem("Export Layout to Clipboard")) {
+                GuiScreen.setClipboardString(ImGui.saveIniSettingsToMemory());
+                EditEngine.status = "Layout copiado al portapapeles";
+            }
+            if (ImGui.menuItem("Import Layout from Clipboard")) {
+                String ini = GuiScreen.getClipboardString();
+                if (ini != null && ini.contains("[Window]")) {
+                    ImGui.loadIniSettingsFromMemory(ini);
+                    EditEngine.status = "Layout importado";
+                } else {
+                    EditEngine.status = "El portapapeles no tiene un layout";
+                }
+            }
+            ImGui.endMenu();
+        }
+        if (ImGui.beginMenu("Help")) {
+            ImGui.menuItem("Style Editor", "", showStyle);
+            ImGui.menuItem("Keybinds", "", showKeybinds);
+            ImGui.menuItem("About LitBuild", "", showAbout);
             ImGui.endMenu();
         }
         ImGui.endMainMenuBar();
@@ -1059,7 +1161,79 @@ public class EditorScreen extends GuiScreen {
         ImGui.sliderInt("Radius", Brush.radius, 1, TERRAIN_MAX_RADIUS);
         ImGui.combo("Mode", elevMode, Terrain.ELEVATION_MODES);
         ImGui.sliderInt("Amount", elevAmount, 1, 6);
-        hint("Mantén el botón derecho y arrastra: sube, baja o aplana el terreno por columnas. El efecto es máximo en el centro y se acumula mientras te mueves.");
+        heightmapRow();
+        hint("Mantén el botón derecho y arrastra: sube, baja o aplana el terreno por columnas. El efecto es máximo en el centro y se acumula mientras te mueves. Con un heightmap, el brillo de la imagen fija cuánto cambia cada punto del pincel.");
+    }
+
+    private static java.io.File heightmapDir() {
+        java.io.File d = new java.io.File(mc().mcDataDir, "config/litbuild/heightmaps");
+        d.mkdirs();
+        return d;
+    }
+
+    private static net.minecraft.client.Minecraft mc() {
+        return net.minecraft.client.Minecraft.getMinecraft();
+    }
+
+    /** Load Heightmap: una imagen (ruta, URL o una de la carpeta de heightmaps); las de color se pasan a blanco y negro. */
+    private void heightmapRow() {
+        ImGui.separatorText("Heightmap");
+        ImGui.inputText("Image##hm", heightmapSource);
+        java.io.File[] files = heightmapDir().listFiles();
+        if (files != null && files.length > 0) {
+            ImGui.setNextItemWidth(ImGui.getContentRegionAvailX());
+            if (ImGui.beginCombo("##hmlist", "Saved heightmaps...")) {
+                java.util.Arrays.sort(files);
+                for (java.io.File f : files) {
+                    if (f.isFile() && ImGui.selectable(f.getName())) {
+                        heightmapSource.set(f.getPath());
+                        loadHeightmap();
+                    }
+                }
+                ImGui.endCombo();
+            }
+        }
+        int c = buttonRow("Load Heightmap", "Clear");
+        if (c == 0) {
+            loadHeightmap();
+        } else if (c == 1) {
+            Terrain.heightmap = null;
+            heightmapEntry = null;
+        }
+        if (heightmapEntry != null && !heightmapEntry.loading && Terrain.heightmap == null) {
+            if (heightmapEntry.error != null || heightmapEntry.pixels == null) {
+                Txt.colored(1f, 0.4f, 0.35f, 1f, "No se pudo cargar: " + heightmapEntry.error);
+            } else {
+                float[] g = new float[heightmapEntry.w * heightmapEntry.h];
+                for (int i = 0; i < g.length; i++) {
+                    int p = heightmapEntry.pixels[i];
+                    g[i] = (0.299f * ((p >> 16) & 255) + 0.587f * ((p >> 8) & 255) + 0.114f * (p & 255)) / 255f;
+                }
+                Terrain.heightmap = new Terrain.Heightmap(g, heightmapEntry.w, heightmapEntry.h);
+            }
+        }
+        Txt.disabled(heightmapEntry == null ? "Sin heightmap: se usa el desvanecido suave." : heightmapEntry.loading ? "Cargando..."
+                : Terrain.heightmap != null ? "Heightmap " + heightmapEntry.w + " x " + heightmapEntry.h + " activo" : "");
+    }
+
+    private void loadHeightmap() {
+        String src = heightmapSource.get().trim();
+        if (src.isEmpty()) {
+            return;
+        }
+        Terrain.heightmap = null;
+        ImageCache.forget(src);
+        heightmapEntry = ImageCache.get(src);
+        // Una imagen de fuera de la carpeta se copia a ella para tenerla a mano la próxima vez.
+        java.io.File f = new java.io.File(src);
+        if (f.isFile() && !f.getParentFile().equals(heightmapDir())) {
+            try {
+                java.nio.file.Files.copy(f.toPath(), new java.io.File(heightmapDir(), f.getName()).toPath(),
+                        java.nio.file.StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException e) {
+                // no es grave: sigue cargada
+            }
+        }
     }
 
     private void distortOptions() {
@@ -1403,38 +1577,59 @@ public class EditorScreen extends GuiScreen {
         Placement.pos[2] = r.min[2];
     }
 
-    /** Ventana flotante con una imagen de referencia (URL o archivo). */
+    /**
+     * Ventana flotante con una imagen de referencia (URL o archivo). Clic derecho: cerrar, filtrado Nearest, Show In Game UI
+     * (la imagen sigue visible sobre el juego con el editor cerrado), Borderless y Opacity.
+     */
     private void referenceWindow() {
         ImGui.setNextWindowSize(360, 300, imgui.flag.ImGuiCond.FirstUseEver);
-        if (ImGui.begin("Reference Image", showRef)) {
-            ImGui.setNextItemWidth(ImGui.getContentRegionAvailX() - 70f);
-            ImGui.inputText("##refsrc", refSource);
-            ImGui.sameLine();
-            if (ImGui.button("Load") && !refSource.get().trim().isEmpty()) {
-                ImageCache.forget(refSource.get().trim());
-                refEntry = ImageCache.get(refSource.get().trim());
+        int flags = ReferenceImage.borderless.get()
+                ? ImGuiWindowFlags.NoTitleBar | ImGuiWindowFlags.NoBackground | ImGuiWindowFlags.NoScrollbar
+                        | ImGuiWindowFlags.NoScrollWithMouse : 0;
+        if (ImGui.begin("Reference Image", showRef, flags)) {
+            if (!ReferenceImage.borderless.get()) {
+                ImGui.setNextItemWidth(ImGui.getContentRegionAvailX() - 70f);
+                ImGui.inputText("##refsrc", ReferenceImage.source);
+                ImGui.sameLine();
+                if (ImGui.button("Load")) {
+                    ReferenceImage.load();
+                }
             }
-            ImGui.sliderFloat("Opacity", refOpacity, 0.05f, 1f, "%.2f");
-            ImGui.checkbox("Filtering: Nearest", refNearest);
-            if (refEntry == null) {
-                hint("Escribe una URL (http/https) o la ruta de un archivo de imagen y pulsa Load.");
-            } else if (refEntry.loading) {
+            ImageCache.Entry e = ReferenceImage.entry;
+            if (e == null) {
+                hint("Escribe una URL (http/https) o la ruta de un archivo de imagen y pulsa Load. Clic derecho: opciones.");
+            } else if (e.loading) {
                 Txt.disabled("Cargando...");
             } else {
-                if (refEntry.error != null) {
-                    Txt.colored(1f, 0.4f, 0.35f, 1f, "No se pudo cargar: " + refEntry.error);
+                if (e.error != null) {
+                    Txt.colored(1f, 0.4f, 0.35f, 1f, "No se pudo cargar: " + e.error);
                 }
-                int tex = ImageCache.texture(refEntry);
-                ImageCache.setNearest(refEntry, refNearest.get());
+                int tex = ImageCache.texture(e);
+                ImageCache.setNearest(e, ReferenceImage.nearest.get());
                 if (tex != 0) {
                     float aw = ImGui.getContentRegionAvailX();
-                    float scale = aw / Math.max(1, refEntry.w);
-                    float h = refEntry.h * scale;
+                    float scale = aw / Math.max(1, e.w);
+                    float h = e.h * scale;
                     float x = ImGui.getCursorScreenPosX(), y = ImGui.getCursorScreenPosY();
                     ImGui.dummy(aw, h);
-                    int alpha = Math.round(refOpacity[0] * 255f);
+                    int alpha = Math.round(ReferenceImage.opacity[0] * 255f);
                     ImGui.getWindowDrawList().addImage(tex, x, y, x + aw, y + h, 0f, 0f, 1f, 1f, (alpha << 24) | 0xFFFFFF);
+                    ReferenceImage.x = x;
+                    ReferenceImage.y = y;
+                    ReferenceImage.w = aw;
+                    ReferenceImage.h = h;
                 }
+            }
+            if (ImGui.beginPopupContextWindow("refctx")) {
+                if (ImGui.menuItem("Close Window")) {
+                    showRef.set(false);
+                }
+                ImGui.menuItem("Filtering: Nearest", "", ReferenceImage.nearest);
+                ImGui.menuItem("Show In Game UI", "", ReferenceImage.showInGame);
+                ImGui.menuItem("Borderless", "", ReferenceImage.borderless);
+                ImGui.setNextItemWidth(140);
+                ImGui.sliderFloat("Opacity", ReferenceImage.opacity, 0.05f, 1f, "%.2f");
+                ImGui.endPopup();
             }
         }
         ImGui.end();
@@ -1864,20 +2059,6 @@ public class EditorScreen extends GuiScreen {
         hint("Mantén el botón derecho y arrastra: copia el portapapeles cada Spacing bloques, con dispersión, giro y volteo al azar, apoyado en el terreno. Ideal para bosques o rocas. No copia tile entities.");
     }
 
-    /** Brillo mínimo: sube el gamma mientras el editor está abierto y lo devuelve al cerrarlo. */
-    private void applyBrightness() {
-        float want = UiSettings.minBrightness;
-        if (want > 0f) {
-            if (savedGamma < 0f) {
-                savedGamma = mc.gameSettings.gammaSetting;
-            }
-            mc.gameSettings.gammaSetting = savedGamma + want * 100f;
-        } else if (savedGamma >= 0f) {
-            mc.gameSettings.gammaSetting = savedGamma;
-            savedGamma = -1f;
-        }
-    }
-
     private void autoshadeRow() {
         ImGui.checkbox("Sun", shadeSun);
         if (shadeSun.get()) {
@@ -2049,6 +2230,35 @@ public class EditorScreen extends GuiScreen {
         tip("Ctrl+Z cancela lo que quede por colocar y devuelve el original. Rehacer solo vuelve a vaciar la zona.");
     }
 
+    /** Los colores del estilo actual como texto: una línea "índice r g b a" por color. */
+    private static String exportTheme() {
+        StringBuilder sb = new StringBuilder("litbuild-theme\n");
+        imgui.ImVec4 v = new imgui.ImVec4();
+        for (int i = 0; i < ImGuiCol.COUNT; i++) {
+            ImGui.getStyle().getColor(i, v);
+            sb.append(i).append(' ').append(v.x).append(' ').append(v.y).append(' ').append(v.z).append(' ').append(v.w).append('\n');
+        }
+        return sb.toString();
+    }
+
+    private static boolean importTheme(String text) {
+        if (text == null || !text.startsWith("litbuild-theme")) {
+            return false;
+        }
+        for (String line : text.split("\n")) {
+            String[] t = line.trim().split(" ");
+            if (t.length == 5) {
+                try {
+                    ImGui.getStyle().setColor(Integer.parseInt(t[0]), Float.parseFloat(t[1]), Float.parseFloat(t[2]),
+                            Float.parseFloat(t[3]), Float.parseFloat(t[4]));
+                } catch (NumberFormatException e) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private void colourField() {
         BlockColors.ensureBuilt();
         EditEngine.colourField();
@@ -2153,6 +2363,14 @@ public class EditorScreen extends GuiScreen {
                     if (ImGui.button("Bounding Box", ImGui.getContentRegionAvailX(), 0)) {
                         SelectionOps.boundingBox();
                     }
+                    ImGui.sliderInt("Offset", offsetAmount, 1, 32);
+                    int ex = buttonRow("Expand##so", "Shrink##so");
+                    if (ex == 0) {
+                        SelectionOps.offset(offsetAmount[0]);
+                    } else if (ex == 1) {
+                        SelectionOps.offset(-offsetAmount[0]);
+                    }
+                    tip("Expand ensancha la selección en todas las direcciones; Shrink la estrecha (en selecciones irregulares, por las 6 caras).");
                     if (ImGui.button("Convex Hull", ImGui.getContentRegionAvailX(), 0)) {
                         SelectionOps.convexHull();
                     }
@@ -2867,6 +3085,14 @@ public class EditorScreen extends GuiScreen {
             ImGui.checkbox("Keep Existing", Placement.KEEP_EXISTING);
             ImGui.sameLine();
             ImGui.checkbox("Paste Air", Placement.PASTE_AIR);
+            if (!s.entities.isEmpty()) {
+                ImGui.checkbox("Paste Entities (" + s.entities.size() + ")", Placement.PASTE_ENTITIES);
+            }
+            if (ImGui.button("Snap to ground", ImGui.getContentRegionAvailX(), 0)
+                    && !Placement.snapToGround(mc.world)) {
+                EditEngine.status = "Snap to ground: no hay hueco libre";
+            }
+            tip("Baja la copia hasta que se apoye en el suelo (si está dentro del terreno, primero sube).");
             int t = buttonRow("Rotate", "Flip X", "Flip Z");
             if (t == 0) {
                 Placement.rotate();
@@ -2894,12 +3120,14 @@ public class EditorScreen extends GuiScreen {
                 }
                 hint("Los giros que no son múltiplos de 90° usan el bloque más cercano; la orientación de escaleras o troncos solo sigue el yaw en cuartos de vuelta.");
             }
-            int p = buttonRow("Paste", "Paste Copy", "Cancel");
+            int p = buttonRow("Paste", "Paste Copy", "Paste and Select", "Cancel");
             if (p == 0) {
                 confirmPaste(false);
             } else if (p == 1) {
                 confirmPaste(true);
             } else if (p == 2) {
+                pasteAndSelect();
+            } else if (p == 3) {
                 Placement.cancel();
             }
             hint("Ctrl+R rotar · Ctrl+F voltear · Enter pegar · Supr cancelar");
@@ -2955,7 +3183,11 @@ public class EditorScreen extends GuiScreen {
 
     /** Operaciones y edición con el teclado; false si no se pulsó ninguna. */
     private boolean normalShortcut() {
-        if (Keybinds.pressed("showbiomes")) {
+        if (Keybinds.pressed("duplicate")) {
+            if (Selection.active) {
+                duplicate();
+            }
+        } else if (Keybinds.pressed("showbiomes")) {
             BiomeView.show.set(!BiomeView.show.get());
         } else if (Keybinds.pressed("quickfill")) {
             fill();
@@ -3020,6 +3252,30 @@ public class EditorScreen extends GuiScreen {
         return tool == SMOOTH || tool == MELT || tool == WELD;
     }
 
+    /** Arcball: gira la cámara alrededor del punto apuntado al empezar el arrastre, manteniendo la distancia. */
+    private void arcball(ImGuiIO io, Vec3d hitVec, float k) {
+        if (arcPivot == null) {
+            Vec3d eye = mc.player.getPositionEyes(1f);
+            arcPivot = hitVec != null ? hitVec : eye.add(mc.player.getLookVec().scale(10));
+            arcDist = Math.max(1.5, arcPivot.distanceTo(eye));
+        }
+        mc.player.turn(io.getMouseDeltaX() * k, -io.getMouseDeltaY() * k);
+        Vec3d look = mc.player.getLookVec();
+        mc.player.setPositionAndUpdate(arcPivot.x - look.x * arcDist, arcPivot.y - look.y * arcDist - mc.player.getEyeHeight(),
+                arcPivot.z - look.z * arcDist);
+    }
+
+    /** Pan: desplaza la cámara en su plano (derecha y arriba de la vista) según lo que arrastra el ratón. */
+    private void pan(ImGuiIO io) {
+        Vec3d look = mc.player.getLookVec();
+        Vec3d right = look.crossProduct(new Vec3d(0, 1, 0)).normalize();
+        Vec3d up = right.crossProduct(look).normalize();
+        double s = 0.02 * (WorldPanels.flight[0] / 100.0);
+        mc.player.setPositionAndUpdate(mc.player.posX - right.x * io.getMouseDeltaX() * s + up.x * io.getMouseDeltaY() * s,
+                mc.player.posY - right.y * io.getMouseDeltaX() * s + up.y * io.getMouseDeltaY() * s,
+                mc.player.posZ - right.z * io.getMouseDeltaX() * s + up.z * io.getMouseDeltaY() * s);
+    }
+
     private void viewport(ImGuiIO io) {
         boolean overUi = io.getWantCaptureMouse();
         boolean terrain = isTerrain();
@@ -3061,11 +3317,30 @@ public class EditorScreen extends GuiScreen {
         }
 
         if (!overUi) {
-            // Cámara: arrastrar con el botón izquierdo (misma sensibilidad que el ratón normal).
+            // Cámara: arrastrar con el botón izquierdo (misma sensibilidad que el ratón normal). Ctrl = arcball alrededor del punto
+            // apuntado, Shift = desplazar la cámara; la rueda cambia la velocidad de vuelo (con Ctrl, el radio del pincel).
             if (ImGui.isMouseDown(ImGuiMouseButton.Left) && !BoxGizmo.dragging && BoxGizmo.hovered < 0) {
                 float s = mc.gameSettings.mouseSensitivity * 0.6f + 0.2f;
-                float k = s * s * s * 8f;
-                mc.player.turn(io.getMouseDeltaX() * k, -io.getMouseDeltaY() * k);
+                float k = s * s * s * 8f * (invertCamera.get() ? -1f : 1f);
+                if (io.getKeyCtrl()) {
+                    arcball(io, hitVec, k);
+                } else if (io.getKeyShift()) {
+                    arcPivot = null;
+                    pan(io);
+                } else {
+                    arcPivot = null;
+                    mc.player.turn(io.getMouseDeltaX() * k, -io.getMouseDeltaY() * k);
+                }
+            } else {
+                arcPivot = null;
+            }
+            float wheel = io.getMouseWheel();
+            if (wheel != 0f) {
+                if (io.getKeyCtrl()) {
+                    Brush.radius[0] = Math.max(1, Math.min(32, Brush.radius[0] + (wheel > 0 ? 1 : -1)));
+                } else {
+                    WorldPanels.flight[0] = Math.max(100, Math.min(999, WorldPanels.flight[0] + (wheel > 0 ? 25 : -25)));
+                }
             }
             boolean useTool = pos != null && ImGui.isMouseClicked(ImGuiMouseButton.Right, false);
             if (Placement.active) {
@@ -3684,6 +3959,64 @@ public class EditorScreen extends GuiScreen {
         }
     }
 
+    /** Duplicate (Ctrl+J): copia la selección y la deja como Placement encima de la original, lista para moverla. */
+    private void duplicate() {
+        dupFrom = Clipboard.current;
+        dupPending = true;
+        EditEngine.copy(false, true, false);
+    }
+
+    /** Cuando el servidor termina la copia de Duplicate, empieza el Placement en la posición de la selección. */
+    private void dupCheck() {
+        if (dupPending && Clipboard.current != dupFrom && Clipboard.current != null && Selection.active) {
+            dupPending = false;
+            Placement.start(Clipboard.current);
+            Placement.follow = false;
+            Placement.pos[0] = Selection.min(0);
+            Placement.pos[1] = Selection.min(1);
+            Placement.pos[2] = Selection.min(2);
+        }
+    }
+
+    private static java.io.File layoutFile() {
+        return new java.io.File(net.minecraft.client.Minecraft.getMinecraft().mcDataDir, "config/litbuild/layout-default.ini");
+    }
+
+    private void storeLayout() {
+        try {
+            java.nio.file.Files.write(layoutFile().toPath(), ImGui.saveIniSettingsToMemory().getBytes(java.nio.charset.StandardCharsets.UTF_8));
+            EditEngine.status = "Layout guardado como el de por defecto";
+        } catch (IOException e) {
+            EditEngine.status = "No se pudo guardar el layout: " + e.getMessage();
+        }
+    }
+
+    private void restoreLayout() {
+        try {
+            if (layoutFile().isFile()) {
+                ImGui.loadIniSettingsFromMemory(new String(java.nio.file.Files.readAllBytes(layoutFile().toPath()),
+                        java.nio.charset.StandardCharsets.UTF_8));
+                EditEngine.status = "Layout restaurado";
+            } else {
+                needLayout = true;
+                EditEngine.status = "No hay layout guardado: se restablece el de fábrica";
+            }
+        } catch (IOException e) {
+            EditEngine.status = "No se pudo leer el layout: " + e.getMessage();
+        }
+    }
+
+    /** Paste and Select: confirma el pegado y deja como selección la caja que ocupaba. */
+    private void pasteAndSelect() {
+        if (Placement.shape == null) {
+            return;
+        }
+        int x = Placement.pos[0], y = Placement.pos[1], z = Placement.pos[2];
+        int sx = Placement.shape.sx, sy = Placement.shape.sy, sz = Placement.shape.sz;
+        confirmPaste(false);
+        Selection.set(new BlockPos(x, y, z), new BlockPos(x + sx - 1, Math.min(255, y + sy - 1), z + sz - 1));
+    }
+
     private void startPaste() {
         Clipboard c = Clipboard.current;
         if (c == null) {
@@ -3691,6 +4024,9 @@ public class EditorScreen extends GuiScreen {
             return;
         }
         Placement.start(c);
+        if (c.withAir) {
+            Placement.PASTE_AIR.set(true);
+        }
         Placement.moveTo(mc.player.getPosition());
     }
 

@@ -20,6 +20,8 @@ public final class Placement {
     public static final int[] pos = new int[3];
     public static final ImBoolean KEEP_EXISTING = new ImBoolean(false);
     public static final ImBoolean PASTE_AIR = new ImBoolean(false);
+    /** Pega también las entidades copiadas con Copy With Entities. */
+    public static final ImBoolean PASTE_ENTITIES = new ImBoolean(true);
 
     private Placement() {
     }
@@ -79,6 +81,60 @@ public final class Placement {
         if (!follow && old != null) {
             pos[0] += (old.sx - n.sx) / 2;
             pos[2] += (old.sz - n.sz) / 2;
+        }
+        return true;
+    }
+
+    /**
+     * Snap to ground: baja la copia hasta que la capa inferior de cada columna se apoya en un bloque sólido del mundo (si empieza
+     * dentro del terreno, primero sube hasta quedar libre). false si no encontró un sitio.
+     */
+    public static boolean snapToGround(net.minecraft.world.World w) {
+        if (shape == null) {
+            return false;
+        }
+        int cols = shape.sx * shape.sz;
+        int[] lowest = new int[cols];
+        java.util.Arrays.fill(lowest, -1);
+        for (int y = shape.sy - 1; y >= 0; y--) {
+            for (int z = 0; z < shape.sz; z++) {
+                for (int x = 0; x < shape.sx; x++) {
+                    if (shape.states[shape.index(x, y, z)] != Clipboard.AIR) {
+                        lowest[z * shape.sx + x] = y;
+                    }
+                }
+            }
+        }
+        int y = pos[1];
+        for (int up = 0; up < 128 && !fits(w, lowest, y); up++) {
+            y++;
+        }
+        if (!fits(w, lowest, y)) {
+            return false;
+        }
+        while (y > 0 && fits(w, lowest, y - 1)) {
+            y--;
+        }
+        pos[1] = y;
+        follow = false;
+        return true;
+    }
+
+    /** ¿Caben las celdas más bajas de cada columna con la base en y, sin tocar bloques sólidos? */
+    private static boolean fits(net.minecraft.world.World w, int[] lowest, int y) {
+        net.minecraft.util.math.BlockPos.MutableBlockPos q = new net.minecraft.util.math.BlockPos.MutableBlockPos();
+        for (int z = 0; z < shape.sz; z++) {
+            for (int x = 0; x < shape.sx; x++) {
+                int low = lowest[z * shape.sx + x];
+                if (low < 0) {
+                    continue;
+                }
+                int wy = y + low;
+                q.setPos(pos[0] + x, wy, pos[2] + z);
+                if (wy < 0 || wy > 255 || !w.isBlockLoaded(q) || w.getBlockState(q).getMaterial().isSolid()) {
+                    return false;
+                }
+            }
         }
         return true;
     }

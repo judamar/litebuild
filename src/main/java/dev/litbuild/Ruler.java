@@ -8,6 +8,8 @@ import net.minecraft.util.math.BlockPos;
 /** Regla: una lista de puntos en el mundo y sus medidas. */
 public final class Ruler {
     public static final List<BlockPos> points = new ArrayList<BlockPos>();
+    /** View > Show Ruler: dibuja o no las mediciones en el mundo. */
+    public static final imgui.type.ImBoolean show = new imgui.type.ImBoolean(true);
 
     private Ruler() {
     }

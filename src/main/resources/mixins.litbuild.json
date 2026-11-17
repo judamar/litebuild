@@ -8,7 +8,10 @@
 		"MixinEntity",
 		"MixinEntityPlayerSP",
 		"MixinBlockFalling",
-		"MixinBlockFarmland"
+		"MixinBlockFarmland",
+		"MixinMinecraft",
+		"MixinInventoryPlayer",
+		"MixinPlayerControllerMP"
 	],
 	"injectors": {
 		"defaultRequire": 0

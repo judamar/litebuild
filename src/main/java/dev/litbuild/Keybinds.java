@@ -85,6 +85,7 @@ public final class Keybinds {
         add("paste", "Paste / confirm placement", "Edit", BOTH, ImGuiKey.V, true);
         add("delete", "Delete selection", "Edit", NORMAL, ImGuiKey.Delete, false);
         add("saveblueprint", "Save Blueprint", "Edit", NORMAL, ImGuiKey.P, true);
+        add("duplicate", "Duplicate", "Edit", NORMAL, ImGuiKey.J, true);
         add("quickfill", "Quick Fill", "Operations", NORMAL, ImGuiKey.F, true);
         add("quickreplace", "Quick Replace", "Operations", NORMAL, ImGuiKey.R, true);
         add("pl.confirm", "Confirm placement", "Placement", PLACEMENT, ImGuiKey.Enter, false);

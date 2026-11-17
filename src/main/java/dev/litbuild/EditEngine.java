@@ -396,6 +396,11 @@ public final class EditEngine {
 
     /** Copia la selección al portapapeles; con cut también la borra (una sola edición deshacible). */
     public static void copy(final boolean cut) {
+        copy(cut, false, false);
+    }
+
+    /** Copy With...: withEntities guarda también las entidades de la caja (no jugadores); withAir hace que al pegar el aire sustituya. */
+    public static void copy(final boolean cut, final boolean withEntities, final boolean withAir) {
         if (!selectionOk() || !boxOk()) {
             return;
         }
@@ -407,6 +412,36 @@ public final class EditEngine {
             public void run(IntegratedServer server) {
                 World w = server.getWorld(dim);
                 Clipboard c = readClipboard(w, box, mask);
+                c.withAir = withAir;
+                int nEntities = 0;
+                if (withEntities) {
+                    net.minecraft.util.math.AxisAlignedBB bb = new net.minecraft.util.math.AxisAlignedBB(box[0], box[1], box[2],
+                            box[3] + 1, box[4] + 1, box[5] + 1);
+                    for (net.minecraft.entity.Entity e : w.getEntitiesWithinAABB(net.minecraft.entity.Entity.class, bb)) {
+                        NBTTagCompound tag = new NBTTagCompound();
+                        if (e instanceof net.minecraft.entity.player.EntityPlayer || !e.writeToNBTOptional(tag)) {
+                            continue;
+                        }
+                        net.minecraft.nbt.NBTTagList pos = tag.getTagList("Pos", 6);
+                        net.minecraft.nbt.NBTTagList rel = new net.minecraft.nbt.NBTTagList();
+                        rel.appendTag(new net.minecraft.nbt.NBTTagDouble(pos.getDoubleAt(0) - box[0]));
+                        rel.appendTag(new net.minecraft.nbt.NBTTagDouble(pos.getDoubleAt(1) - box[1]));
+                        rel.appendTag(new net.minecraft.nbt.NBTTagDouble(pos.getDoubleAt(2) - box[2]));
+                        tag.setTag("Pos", rel);
+                        tag.removeTag("UUIDMost");
+                        tag.removeTag("UUIDLeast");
+                        if (tag.hasKey("TileX")) {
+                            tag.setInteger("TileX", tag.getInteger("TileX") - box[0]);
+                            tag.setInteger("TileY", tag.getInteger("TileY") - box[1]);
+                            tag.setInteger("TileZ", tag.getInteger("TileZ") - box[2]);
+                        }
+                        c.entities.add(tag);
+                        nEntities++;
+                        if (cut) {
+                            e.setDead();
+                        }
+                    }
+                }
                 Clipboard.current = c;
                 if (cut) {
                     final Builder b = new Builder(w, dim, c.states.length, false);
@@ -419,7 +454,8 @@ public final class EditEngine {
                     });
                     b.commit("Cut");
                 } else {
-                    status = "Copiado: " + c.sx + " x " + c.sy + " x " + c.sz + " (" + c.solidCount() + " bloques)";
+                    status = "Copiado: " + c.sx + " x " + c.sy + " x " + c.sz + " (" + c.solidCount() + " bloques"
+                            + (withEntities ? ", " + nEntities + " entidades" : "") + ")";
                 }
             }
         });
@@ -434,13 +470,35 @@ public final class EditEngine {
         final int ox = Placement.pos[0], oy = Placement.pos[1], oz = Placement.pos[2];
         final boolean keep = Placement.KEEP_EXISTING.get();
         final boolean air = Placement.PASTE_AIR.get();
+        final boolean pasteEntities = Placement.PASTE_ENTITIES.get();
         final int dim = dim();
         runOnServer(new ServerTask() {
             @Override
             public void run(IntegratedServer server) {
-                Builder b = new Builder(server.getWorld(dim), dim, c.states.length, false);
+                World w = server.getWorld(dim);
+                Builder b = new Builder(w, dim, c.states.length, false);
                 place(b, c, ox, oy, oz, air, keep);
                 b.commit(name);
+                if (pasteEntities) {
+                    for (NBTTagCompound src : c.entities) {
+                        NBTTagCompound tag = src.copy();
+                        net.minecraft.nbt.NBTTagList pos = tag.getTagList("Pos", 6);
+                        net.minecraft.nbt.NBTTagList moved = new net.minecraft.nbt.NBTTagList();
+                        moved.appendTag(new net.minecraft.nbt.NBTTagDouble(pos.getDoubleAt(0) + ox));
+                        moved.appendTag(new net.minecraft.nbt.NBTTagDouble(pos.getDoubleAt(1) + oy));
+                        moved.appendTag(new net.minecraft.nbt.NBTTagDouble(pos.getDoubleAt(2) + oz));
+                        tag.setTag("Pos", moved);
+                        if (tag.hasKey("TileX")) {
+                            tag.setInteger("TileX", tag.getInteger("TileX") + ox);
+                            tag.setInteger("TileY", tag.getInteger("TileY") + oy);
+                            tag.setInteger("TileZ", tag.getInteger("TileZ") + oz);
+                        }
+                        net.minecraft.entity.Entity e = net.minecraft.entity.EntityList.createEntityFromNBT(tag, w);
+                        if (e != null) {
+                            w.spawnEntity(e);
+                        }
+                    }
+                }
             }
         });
     }
@@ -471,6 +529,148 @@ public final class EditEngine {
             }
         });
         return true;
+    }
+
+    /**
+     * Mueve (remove) o copia el contenido de la selección dx, dy, dz bloques: el Move y el Clone del Builder Mode.
+     * keep = no sobrescribe bloques que ya hay; copyAir = también copia el aire. Devuelve si se lanzó.
+     */
+    public static boolean transfer(final int dx, final int dy, final int dz, final boolean remove, final boolean keep,
+            final boolean copyAir) {
+        if (!selectionOk() || !boxOk()) {
+            return false;
+        }
+        final int[] box = box();
+        final Set<Long> mask = Selection.mask;
+        final int dim = dim();
+        runOnServer(new ServerTask() {
+            @Override
+            public void run(IntegratedServer server) {
+                World w = server.getWorld(dim);
+                Clipboard c = readClipboard(w, box, mask);
+                final Builder b = new Builder(w, dim, c.states.length * 2, false);
+                if (remove) {
+                    final IBlockState air = Blocks.AIR.getDefaultState();
+                    iterate(box, mask, new Visit() {
+                        @Override
+                        public void at(int x, int y, int z) {
+                            b.set(x, y, z, air, null, false);
+                        }
+                    });
+                }
+                place(b, c, box[0] + dx, box[1] + dy, box[2] + dz, copyAir, keep);
+                b.commit(remove ? "Move" : "Clone");
+            }
+        });
+        return true;
+    }
+
+    /**
+     * Smear: repite la selección a lo largo del vector (dx, dy, dz) de bloque en bloque, rellenando el camino. Se corta en
+     * la primera copia que choque con un bloque sólido que no sea de la propia selección.
+     */
+    public static void smear(final int dx, final int dy, final int dz, final boolean keep) {
+        if (!selectionOk() || !boxOk()) {
+            return;
+        }
+        final int n = Math.max(Math.abs(dx), Math.max(Math.abs(dy), Math.abs(dz)));
+        if (n == 0) {
+            return;
+        }
+        if (Selection.volume() * (long) n > MAX_BLOCKS) {
+            status = "Smear demasiado grande: " + Selection.volume() * (long) n + " bloques (máximo " + MAX_BLOCKS + ")";
+            return;
+        }
+        final int[] box = box();
+        final Set<Long> mask = Selection.mask;
+        final int dim = dim();
+        runOnServer(new ServerTask() {
+            @Override
+            public void run(IntegratedServer server) {
+                World w = server.getWorld(dim);
+                Clipboard c = readClipboard(w, box, mask);
+                Builder b = new Builder(w, dim, c.states.length * n, false);
+                int done = 0;
+                for (int k = 1; k <= n; k++) {
+                    int ox = box[0] + Math.round(dx * (float) k / n), oy = box[1] + Math.round(dy * (float) k / n),
+                            oz = box[2] + Math.round(dz * (float) k / n);
+                    if (blocked(b, c, box, ox, oy, oz)) {
+                        break;
+                    }
+                    place(b, c, ox, oy, oz, false, keep);
+                    done = k;
+                }
+                b.commit("Smear x" + done);
+            }
+        });
+    }
+
+    /** ¿Alguna celda con bloque de la copia cae sobre un bloque sólido ajeno a la selección original? */
+    private static boolean blocked(Builder b, Clipboard c, int[] box, int ox, int oy, int oz) {
+        for (int y = 0; y < c.sy; y++) {
+            for (int z = 0; z < c.sz; z++) {
+                for (int x = 0; x < c.sx; x++) {
+                    if (c.states[c.index(x, y, z)] == Clipboard.AIR) {
+                        continue;
+                    }
+                    int wx = ox + x, wy = oy + y, wz = oz + z;
+                    boolean inOriginal = wx >= box[0] && wx <= box[3] && wy >= box[1] && wy <= box[4] && wz >= box[2] && wz <= box[5];
+                    IBlockState s = b.peek(wx, wy, wz);
+                    if (!inOriginal && s != null && s.getMaterial().isSolid()) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Borra hasta max bloques conectados (por las 6 caras) del mismo estado que el de start, empezando por los más cercanos. */
+    public static void eraseConnected(final BlockPos start, final int max) {
+        final int dim = dim();
+        runOnServer(new ServerTask() {
+            @Override
+            public void run(IntegratedServer server) {
+                World w = server.getWorld(dim);
+                Builder b = new Builder(w, dim, max, false);
+                IBlockState target = b.peek(start.getX(), start.getY(), start.getZ());
+                if (target == null || target.getBlock() == Blocks.AIR) {
+                    return;
+                }
+                IBlockState air = Blocks.AIR.getDefaultState();
+                Set<Long> seen = new HashSet<Long>();
+                ArrayDeque<BlockPos> queue = new ArrayDeque<BlockPos>();
+                queue.add(start);
+                seen.add(start.toLong());
+                int[][] d = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
+                int count = 0;
+                while (!queue.isEmpty() && count < max) {
+                    BlockPos p = queue.poll();
+                    b.set(p.getX(), p.getY(), p.getZ(), air, null, false);
+                    count++;
+                    for (int[] o : d) {
+                        BlockPos n = p.add(o[0], o[1], o[2]);
+                        if (seen.add(n.toLong()) && b.peek(n.getX(), n.getY(), n.getZ()) == target) {
+                            queue.add(n);
+                        }
+                    }
+                }
+                b.commit("Erase connected");
+            }
+        });
+    }
+
+    /** Pone un bloque suelto sin historial (Force Place, Angel Placement, Replace Mode...). noUpdates = sin avisar a los vecinos. */
+    public static void placeRaw(final BlockPos pos, final IBlockState state, final boolean noUpdates) {
+        runOnServer(new ServerTask() {
+            @Override
+            public void run(IntegratedServer server) {
+                World w = server.getWorld(dim());
+                if (pos.getY() >= 0 && pos.getY() <= 255 && w.isBlockLoaded(pos)) {
+                    w.setBlockState(pos, state, noUpdates ? 2 : 3);
+                }
+            }
+        });
     }
 
     /** Repite count copias de la selección en la dirección dir, separadas por gap bloques. */
@@ -859,7 +1059,7 @@ public final class EditEngine {
     }
 
     /** Copia a dst las propiedades de src que dst también tiene (con un valor permitido). */
-    private static IBlockState copyProperties(IBlockState src, IBlockState dst) {
+    static IBlockState copyProperties(IBlockState src, IBlockState dst) {
         IBlockState out = dst;
         for (IProperty<?> p : src.getPropertyKeys()) {
             if (out.getPropertyKeys().contains(p) && p.getAllowedValues().contains(src.getValue(p))) {
@@ -870,7 +1070,7 @@ public final class EditEngine {
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
-    private static IBlockState withProperty(IBlockState state, IProperty p, Comparable value) {
+    static IBlockState withProperty(IBlockState state, IProperty p, Comparable value) {
         return state.withProperty(p, value);
     }
 
@@ -1452,6 +1652,8 @@ public final class EditEngine {
                 final World w = server.getWorld(dim);
                 final Builder b = new Builder(w, dim, cap, false);
                 final List<long[]> cells = new ArrayList<long[]>();
+                final List<int[]> coords = new ArrayList<int[]>();
+                final List<int[]> starts = new ArrayList<int[]>();
                 final List<NBTTagCompound> tiles = new ArrayList<NBTTagCompound>();
                 final double cx = (box[0] + box[3] + 1) / 2.0, cy = (box[1] + box[4] + 1) / 2.0, cz = (box[2] + box[5] + 1) / 2.0;
                 iterate(box, mask, new Visit() {
@@ -1461,8 +1663,11 @@ public final class EditEngine {
                         if (s == null) {
                             return;
                         }
-                        double dx = (x + 0.5 - cx) * hm, dy = (y + 0.5 - cy) * vm, dz = (z + 0.5 - cz) * hm;
-                        long d = (long) (Math.sqrt(dx * dx + dy * dy + dz * dz) * 1000);
+                        if (s.getBlock() == Blocks.STRUCTURE_BLOCK) {
+                            starts.add(new int[] {x, y, z});
+                        }
+                        coords.add(new int[] {x, y, z});
+                        long d = 0;
                         // {orden por distancia, posición, estado, índice del tile (-1 = ninguno)}
                         NBTTagCompound tag = null;
                         if (s.getBlock().hasTileEntity()) {
@@ -1478,6 +1683,21 @@ public final class EditEngine {
                 if (cells.isEmpty()) {
                     status = "Animated Rebuild: no hay nada que reconstruir";
                     return;
+                }
+                // El orden sale de la distancia (con los multiplicadores) al centro o, si hay structure blocks, al más cercano.
+                for (int i = 0; i < cells.size(); i++) {
+                    int[] c = coords.get(i);
+                    double best = Double.MAX_VALUE;
+                    if (starts.isEmpty()) {
+                        double dx = (c[0] + 0.5 - cx) * hm, dy = (c[1] + 0.5 - cy) * vm, dz = (c[2] + 0.5 - cz) * hm;
+                        best = Math.sqrt(dx * dx + dy * dy + dz * dz);
+                    } else {
+                        for (int[] st : starts) {
+                            double dx = (c[0] - st[0]) * hm, dy = (c[1] - st[1]) * vm, dz = (c[2] - st[2]) * hm;
+                            best = Math.min(best, Math.sqrt(dx * dx + dy * dy + dz * dz));
+                        }
+                    }
+                    cells.get(i)[0] = (long) (best * 1000);
                 }
                 java.util.Collections.sort(cells, new Comparator<long[]>() {
                     @Override

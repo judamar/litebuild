@@ -13,7 +13,7 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.liteloader'
 
-version = '0.25.0'
+version = '0.26.1'
 group = 'dev.litbuild'
 archivesBaseName = 'litbuild'
 sourceCompatibility = targetCompatibility = '1.8'

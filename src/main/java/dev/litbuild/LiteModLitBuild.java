@@ -6,6 +6,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.lwjgl.input.Keyboard;
 
+import com.mumfrey.liteloader.HUDRenderListener;
 import com.mumfrey.liteloader.LiteMod;
 import com.mumfrey.liteloader.PostRenderListener;
 import com.mumfrey.liteloader.ShutdownListener;
@@ -16,11 +17,16 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.KeyBinding;
 
 /** Punto de entrada del mod. Right Shift abre el editor (la pantalla con ImGui). */
-public class LiteModLitBuild implements LiteMod, Tickable, ShutdownListener, PostRenderListener {
+public class LiteModLitBuild implements LiteMod, Tickable, ShutdownListener, PostRenderListener, HUDRenderListener {
     public static final Logger LOG = LogManager.getLogger("LitBuild");
 
     private final KeyBinding openEditor = new KeyBinding("Abrir editor", Keyboard.KEY_RSHIFT, "LitBuild");
     private final KeyBinding noClipKey = new KeyBinding("Alternar No Clip", Keyboard.KEY_NONE, "LitBuild");
+    private final KeyBinding builderMenu = new KeyBinding("Menú de Builder", Keyboard.KEY_B, "LitBuild");
+    /** Una tecla por capability (la de Replace Mode es R, como en Axiom); No Clip tiene la suya aparte. */
+    private final KeyBinding[] capabilityKeys = new KeyBinding[8];
+    /** El código de la tecla del menú de Builder (para que la propia pantalla se cierre con ella). */
+    public static volatile int menuKeyCode = Keyboard.KEY_B;
 
     @Override
     public String getName() {
@@ -29,7 +35,7 @@ public class LiteModLitBuild implements LiteMod, Tickable, ShutdownListener, Pos
 
     @Override
     public String getVersion() {
-        return "0.25.0";
+        return "0.26.1";
     }
 
     @Override
@@ -38,6 +44,13 @@ public class LiteModLitBuild implements LiteMod, Tickable, ShutdownListener, Pos
         migrateOldConfig();
         UiSettings.load();
         LiteLoader.getInput().registerKeyBinding(noClipKey);
+        LiteLoader.getInput().registerKeyBinding(builderMenu);
+        for (int i = 0; i < capabilityKeys.length; i++) {
+            capabilityKeys[i] = new KeyBinding("Capability: " + BuilderMode.CAPABILITIES[i],
+                    i == 3 ? Keyboard.KEY_R : Keyboard.KEY_NONE, "LitBuild");
+            LiteLoader.getInput().registerKeyBinding(capabilityKeys[i]);
+        }
+        Brightness.restoreAtStartup();
         LOG.info("LitBuild cargado");
         // Diagnóstico: forzar la carga de la librería nativa de imgui-java ya en el arranque.
         try {
@@ -67,8 +80,21 @@ public class LiteModLitBuild implements LiteMod, Tickable, ShutdownListener, Pos
         WorldPanels.applyFlight();
         NoClip.tick(mc);
         FluidOpacity.tick(UiSettings.fluidOpacity);
+        Brightness.tick(mc);
+        menuKeyCode = builderMenu.getKeyCode();
         if (clock && inGame) {
             AnimatedRebuild.tick();
+            BuilderMode.tick(mc);
+        }
+        if (inGame && mc.currentScreen == null) {
+            for (int i = 0; i < capabilityKeys.length; i++) {
+                if (capabilityKeys[i].isPressed()) {
+                    BuilderMode.toggle(i);
+                }
+            }
+            if (builderMenu.isPressed()) {
+                mc.displayGuiScreen(new BuilderMenuScreen());
+            }
         }
         if (noClipKey.isPressed() && inGame) {
             NoClip.toggle();
@@ -87,6 +113,15 @@ public class LiteModLitBuild implements LiteMod, Tickable, ShutdownListener, Pos
 
     @Override
     public void onPostRender(float partialTicks) {
+    }
+
+    @Override
+    public void onPreRenderHUD(int screenWidth, int screenHeight) {
+    }
+
+    @Override
+    public void onPostRenderHUD(int screenWidth, int screenHeight) {
+        BuilderHud.draw(Minecraft.getMinecraft(), screenWidth, screenHeight);
     }
 
     @Override
