@@ -55,6 +55,10 @@ public final class BuilderMode {
     public static final ImBoolean showBarriers = new ImBoolean(false);
     /** Make Fluid Hitboxes Solid. */
     public static final ImBoolean fluidsSolid = new ImBoolean(false);
+    /** Expand Hitboxes to Full Cube: se apunta a todos los bloques como si fueran cubos completos. */
+    public static final ImBoolean expandHitboxes = new ImBoolean(false);
+    /** El bloque apuntado con las hitbox expandidas, para dibujarle el cubo entero (null si no se usa). */
+    public static volatile BlockPos expandedTarget;
 
     /** Alcance de vanilla en creativo: más allá de esto el servidor rechaza romper o colocar. */
     private static final double VANILLA_REACH = 5.5;
@@ -265,10 +269,56 @@ public final class BuilderMode {
                 clearRightClickDelay(mc);
             }
             cameraFlight(mc, p);
+            expandHitboxes(mc);
         } else {
             attackTicks = 0;
+            expandedTarget = null;
         }
         BlockHighlights.update(mc);
+    }
+
+    /**
+     * Expand Hitboxes to Full Cube: traza el rayo de la mirada por la cuadrícula tratando cada bloque (menos el aire y,
+     * sin Make Fluid Hitboxes Solid, los fluidos) como un cubo completo y sustituye lo que vanilla apunta. Si hay una
+     * entidad más cerca que el bloque, se queda la de vanilla.
+     */
+    private static void expandHitboxes(final Minecraft mc) {
+        expandedTarget = null;
+        if (!expandHitboxes.get()) {
+            return;
+        }
+        double reach = mc.playerController.getBlockReachDistance();
+        RayTraceResult vanilla = mc.objectMouseOver;
+        Vec3d eye = mc.player.getPositionEyes(1f);
+        Vec3d look = mc.player.getLook(1f);
+        if (vanilla != null && vanilla.typeOfHit == RayTraceResult.Type.ENTITY && vanilla.hitVec != null) {
+            reach = Math.min(reach, eye.distanceTo(vanilla.hitVec));
+        }
+        final boolean fluids = fluidsSolid.get();
+        double[] r = VoxelRay.trace(new VoxelRay.Probe() {
+            private final BlockPos.MutableBlockPos q = new BlockPos.MutableBlockPos();
+
+            @Override
+            public int at(int x, int y, int z) {
+                if (y < 0 || y > 255) {
+                    return 0;
+                }
+                q.setPos(x, y, z);
+                if (!mc.world.isBlockLoaded(q)) {
+                    return 2;
+                }
+                net.minecraft.block.material.Material m = mc.world.getBlockState(q).getMaterial();
+                return m != net.minecraft.block.material.Material.AIR && (fluids || !m.isLiquid()) ? 1 : 0;
+            }
+        }, eye.x, eye.y, eye.z, look.x, look.y, look.z, reach);
+        if (r == null) {
+            return;
+        }
+        BlockPos pos = new BlockPos((int) r[0], (int) r[1], (int) r[2]);
+        EnumFacing side = EnumFacing.getFront((int) r[3]);
+        mc.objectMouseOver = new RayTraceResult(new Vec3d(eye.x + look.x * r[4], eye.y + look.y * r[4],
+                eye.z + look.z * r[4]), side, pos);
+        expandedTarget = pos;
     }
 
     /** Tocar Alt (pulsar y soltar sin rueda, clics ni otras teclas) abre el menú de Builder. */

@@ -146,6 +146,21 @@ public final class Targeting {
         return start.addVector(dir.x * dist, dir.y * dist, dir.z * dist);
     }
 
+    /** El rayo bajo el píxel (mouseX, mouseY) en coordenadas del mundo: {origen x, y, z, dirección x, y, z}; null si no hay cámara. */
+    public static double[] ray(float mouseX, float mouseY) {
+        if (!valid) {
+            return null;
+        }
+        float winY = VIEWPORT.get(3) - mouseY - 1;
+        Vec3d near = unproject(mouseX, winY, 0f);
+        Vec3d far = unproject(mouseX, winY, 1f);
+        if (near == null || far == null) {
+            return null;
+        }
+        Vec3d dir = far.subtract(near).normalize();
+        return new double[] {camX + near.x, camY + near.y, camZ + near.z, dir.x, dir.y, dir.z};
+    }
+
     private static Vec3d unproject(float x, float y, float z) {
         OUT.clear();
         if (!GLU.gluUnProject(x, y, z, MODELVIEW, PROJECTION, VIEWPORT, OUT)) {

@@ -196,6 +196,62 @@ public final class Clipboard {
         return new Clipboard(nx, ny, nz, out, t);
     }
 
+    /**
+     * Scale2x / Scale3x con detección de bordes (ver {@link VoxelScale}). Un bloque con datos (cofre, cartel) va a la
+     * primera subcelda de su cubo que conserva su estado; si el alisado se la quitó, pierde los datos. null si pasa del tope.
+     */
+    public Clipboard smoothScaled(int f) {
+        if ((long) sx * f * sy * f * sz * f > EditEngine.MAX_BLOCKS) {
+            return null;
+        }
+        int nx = sx * f, ny = sy * f, nz = sz * f;
+        int[] out = VoxelScale.smooth(states, sx, sy, sz, f);
+        Map<Integer, NBTTagCompound> t = new HashMap<Integer, NBTTagCompound>();
+        for (Map.Entry<Integer, NBTTagCompound> e : tiles.entrySet()) {
+            int i = e.getKey();
+            int x = i % sx, z = (i / sx) % sz, y = i / (sx * sz);
+            search:
+            for (int j = 0; j < f; j++) {
+                for (int k = 0; k < f; k++) {
+                    for (int q = 0; q < f; q++) {
+                        int to = ((y * f + j) * nz + z * f + k) * nx + x * f + q;
+                        if (out[to] == states[i]) {
+                            t.put(to, e.getValue());
+                            break search;
+                        }
+                    }
+                }
+            }
+        }
+        return new Clipboard(nx, ny, nz, out, t);
+    }
+
+    /** Lo contrario: cada f x f x f celdas pasan a una, la más frecuente (el aire solo gana si es más de la mitad). */
+    public Clipboard downscaled(int f) {
+        int[] dims = new int[3];
+        int[] out = VoxelScale.downscale(states, sx, sy, sz, f, AIR, dims);
+        Map<Integer, NBTTagCompound> t = new HashMap<Integer, NBTTagCompound>();
+        for (Map.Entry<Integer, NBTTagCompound> e : tiles.entrySet()) {
+            int i = e.getKey();
+            int x = i % sx, z = (i / sx) % sz, y = i / (sx * sz);
+            int to = ((y / f) * dims[2] + z / f) * dims[0] + x / f;
+            if (out[to] == states[i] && !t.containsKey(to)) {
+                t.put(to, e.getValue());
+            }
+        }
+        return new Clipboard(dims[0], dims[1], dims[2], out, t);
+    }
+
+    /**
+     * RotSprite en 3D: se amplía x2 con bordes, se gira con el vecino más cercano y se reduce a la mitad. Los diagonales
+     * quedan más limpios que con el vecino más cercano a secas. Si el ampliado no cabe en el tope, gira sin RotSprite.
+     */
+    public Clipboard rotSprite(double yaw, double pitch, double roll, double kx, double ky, double kz) {
+        Clipboard up = smoothScaled(2);
+        Clipboard rot = up == null ? null : up.transformed(yaw, pitch, roll, kx, ky, kz);
+        return rot == null ? transformed(yaw, pitch, roll, kx, ky, kz) : rot.downscaled(2);
+    }
+
     /** Ejes: primero roll (Z), luego yaw (Y, horario visto desde arriba), luego pitch (X). */
     private static double[] forward(double x, double y, double z, double yaw, double pitch, double roll) {
         double rz = Math.toRadians(roll), ry = Math.toRadians(yaw), rx = Math.toRadians(pitch);

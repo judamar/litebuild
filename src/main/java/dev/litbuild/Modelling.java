@@ -109,11 +109,12 @@ public final class Modelling {
             EditEngine.status = "Modelling: no hay puntos";
             return null;
         }
-        if (shape.get() == Mesh.LOFT && use.size() < 2) {
+        boolean smart = shape.get() == Mesh.LOFT && surface.get() == Mesh.SMART;
+        if (shape.get() == Mesh.LOFT && !smart && use.size() < 2) {
             EditEngine.status = "Modelling: Loft necesita al menos 2 filas con puntos";
             return null;
         }
-        if (shape.get() != Mesh.LOFT && pointCount() < 3) {
+        if ((shape.get() != Mesh.LOFT || smart) && pointCount() < 3) {
             EditEngine.status = "Modelling: hacen falta al menos 3 puntos";
             return null;
         }

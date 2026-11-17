@@ -22,6 +22,10 @@ public final class FluidBall {
     public static final imgui.type.ImBoolean requireSupport = new imgui.type.ImBoolean(false);
     /** Quita el fluido que fluye (sin fuente) de alrededor antes de colocar el nuevo. */
     public static final imgui.type.ImBoolean removeFluids = new imgui.type.ImBoolean(false);
+    /** Rellena esquinas de la orilla y deja planos los recipientes cerrados que contienen una fuente. */
+    public static final imgui.type.ImBoolean fillEdges = new imgui.type.ImBoolean(false);
+    /** 1 = solo cuatro direcciones (vanilla), 2 = con diagonales, 3 = con saltos de caballo. */
+    public static final int[] quality = {1};
     /** La región inicial es toda de fuentes; si no, una sola fuente en el centro. */
     public static final imgui.type.ImBoolean infiniteSources = new imgui.type.ImBoolean(true);
 
@@ -87,7 +91,8 @@ public final class FluidBall {
                 IBlockState s = world.getBlockState(p);
                 return s.getMaterial().isSolid() || s.getMaterial().isLiquid() && s.getValue(BlockLiquid.LEVEL) == 0;
             }
-        }, sources, length, type == LAVA ? 2 : 1, requireSupport.get(), new FluidFlow.Out() {
+        }, sources, length, type == LAVA ? 2 : 1, requireSupport.get(), quality[0], fillEdges.get(),
+                new FluidFlow.Out() {
             @Override
             public void set(int x, int y, int z, int level) {
                 placed.put(new BlockPos(x, y, z).toLong(), fluid.getDefaultState().withProperty(BlockLiquid.LEVEL, level));

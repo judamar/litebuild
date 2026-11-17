@@ -12,9 +12,9 @@ import java.util.Set;
  */
 public final class Mesh {
     public static final String[] SHAPES = {"Loft (rows)", "Triangle Strip", "Triangle Fan", "Convex Hull"};
-    public static final String[] SURFACES = {"Flat", "Catmull-Rom", "Bezier"};
+    public static final String[] SURFACES = {"Flat", "Catmull-Rom", "Bezier", "Smart Surface"};
     public static final int LOFT = 0, STRIP = 1, FAN = 2, HULL = 3;
-    public static final int FLAT = 0, CATMULL = 1, BEZIER = 2;
+    public static final int FLAT = 0, CATMULL = 1, BEZIER = 2, SMART = 3;
     /** Separación máxima entre muestras: menos de medio bloque para que la superficie no deje huecos. */
     private static final double STEP = 0.35;
 
@@ -50,7 +50,7 @@ public final class Mesh {
             return out;
         }
         if (shape == LOFT) {
-            if (!loft(rows, surface, out, limit)) {
+            if (surface == SMART ? !smart(flat, out, limit) : !loft(rows, surface, out, limit)) {
                 return null;
             }
         } else if (shape == STRIP) {
@@ -107,6 +107,121 @@ public final class Mesh {
             }
         }
         return true;
+    }
+
+    /**
+     * Smart Surface: no usa las filas, solo los puntos. Se proyectan en el plano de sus dos ejes más largos, se triangulan
+     * con Delaunay (Bowyer-Watson) y cada triángulo se rellena en 3D, así que la superficie sigue la altura que das a
+     * cada punto. false si hay menos de 3 puntos distintos o están en línea.
+     */
+    private static boolean smart(List<double[]> pts, Set<Long> out, int limit) {
+        double[] lo = {Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE};
+        double[] hi = {-Double.MAX_VALUE, -Double.MAX_VALUE, -Double.MAX_VALUE};
+        for (double[] p : pts) {
+            for (int k = 0; k < 3; k++) {
+                lo[k] = Math.min(lo[k], p[k]);
+                hi[k] = Math.max(hi[k], p[k]);
+            }
+        }
+        int drop = 0;
+        for (int k = 1; k < 3; k++) {
+            if (hi[k] - lo[k] < hi[drop] - lo[drop]) {
+                drop = k;
+            }
+        }
+        int u = (drop + 1) % 3, v = (drop + 2) % 3;
+        List<double[]> uniq = new ArrayList<double[]>();
+        Set<Long> seen = new HashSet<Long>();
+        for (double[] p : pts) {
+            if (seen.add(pack((int) Math.floor(p[u]), (int) Math.floor(p[v]), 0))) {
+                uniq.add(p);
+            }
+        }
+        int n = uniq.size();
+        if (n < 3) {
+            return false;
+        }
+        double[] xs = new double[n], ys = new double[n];
+        for (int i = 0; i < n; i++) {
+            xs[i] = uniq.get(i)[u];
+            ys[i] = uniq.get(i)[v];
+        }
+        List<int[]> tris = delaunay(xs, ys, n);
+        double area = 0;
+        for (int[] t : tris) {
+            area += Math.abs((xs[t[1]] - xs[t[0]]) * (ys[t[2]] - ys[t[0]]) - (ys[t[1]] - ys[t[0]]) * (xs[t[2]] - xs[t[0]]));
+        }
+        if (tris.isEmpty() || area < 1e-6) {
+            return false;
+        }
+        for (int[] t : tris) {
+            if (!triangle(uniq.get(t[0]), uniq.get(t[1]), uniq.get(t[2]), out, limit)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Triangulación de Delaunay en 2D (Bowyer-Watson, O(n^2): sobra para unos pocos puntos). */
+    static List<int[]> delaunay(double[] xs, double[] ys, int n) {
+        double minX = Double.MAX_VALUE, maxX = -Double.MAX_VALUE, minY = Double.MAX_VALUE, maxY = -Double.MAX_VALUE;
+        for (int i = 0; i < n; i++) {
+            minX = Math.min(minX, xs[i]);
+            maxX = Math.max(maxX, xs[i]);
+            minY = Math.min(minY, ys[i]);
+            maxY = Math.max(maxY, ys[i]);
+        }
+        double d = Math.max(Math.max(maxX - minX, maxY - minY), 1);
+        double mx = (minX + maxX) / 2, my = (minY + maxY) / 2;
+        double[] x = java.util.Arrays.copyOf(xs, n + 3), y = java.util.Arrays.copyOf(ys, n + 3);
+        x[n] = mx - 20 * d;
+        y[n] = my - d;
+        x[n + 1] = mx;
+        y[n + 1] = my + 20 * d;
+        x[n + 2] = mx + 20 * d;
+        y[n + 2] = my - d;
+        List<int[]> tris = new ArrayList<int[]>();
+        tris.add(new int[] {n, n + 1, n + 2});
+        for (int i = 0; i < n; i++) {
+            List<int[]> bad = new ArrayList<int[]>();
+            for (int[] t : tris) {
+                if (inCircle(x, y, t, i)) {
+                    bad.add(t);
+                }
+            }
+            java.util.Map<Long, Integer> edges = new java.util.HashMap<Long, Integer>();
+            for (int[] t : bad) {
+                for (int e = 0; e < 3; e++) {
+                    int a = t[e], b = t[(e + 1) % 3];
+                    long k = (long) Math.min(a, b) * (n + 3) + Math.max(a, b);
+                    Integer c = edges.get(k);
+                    edges.put(k, c == null ? 1 : c + 1);
+                }
+            }
+            tris.removeAll(bad);
+            for (java.util.Map.Entry<Long, Integer> e : edges.entrySet()) {
+                if (e.getValue() == 1) {
+                    tris.add(new int[] {(int) (e.getKey() / (n + 3)), (int) (e.getKey() % (n + 3)), i});
+                }
+            }
+        }
+        List<int[]> result = new ArrayList<int[]>();
+        for (int[] t : tris) {
+            if (t[0] < n && t[1] < n && t[2] < n) {
+                result.add(t);
+            }
+        }
+        return result;
+    }
+
+    private static boolean inCircle(double[] x, double[] y, int[] t, int p) {
+        double ax = x[t[0]] - x[p], ay = y[t[0]] - y[p];
+        double bx = x[t[1]] - x[p], by = y[t[1]] - y[p];
+        double cx = x[t[2]] - x[p], cy = y[t[2]] - y[p];
+        double det = (ax * ax + ay * ay) * (bx * cy - cx * by) - (bx * bx + by * by) * (ax * cy - cx * ay)
+                + (cx * cx + cy * cy) * (ax * by - bx * ay);
+        double orient = (x[t[1]] - x[t[0]]) * (y[t[2]] - y[t[0]]) - (y[t[1]] - y[t[0]]) * (x[t[2]] - x[t[0]]);
+        return orient > 0 ? det > 0 : det < 0;
     }
 
     private static boolean loft(List<List<double[]>> rows, int surface, Set<Long> out, int limit) {

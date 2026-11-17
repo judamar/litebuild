@@ -24,6 +24,8 @@ public final class Placement {
     public static final ImBoolean PASTE_ENTITIES = new ImBoolean(true);
     /** Merge Blocks: al pegar, losas contrarias forman losa doble y la nieve se suma. */
     public static final ImBoolean MERGE = new ImBoolean(false);
+    /** Al girar con ángulos libres: RotSprite (ampliar con bordes, girar y reducir) en vez del vecino más cercano. */
+    public static final ImBoolean ROTSPRITE = new ImBoolean(false);
 
     private Placement() {
     }
@@ -56,9 +58,12 @@ public final class Placement {
         scale[0] = scale[1] = scale[2] = 1f;
     }
 
-    /** Cada bloque pasa a ser un cubo de f x f x f. false si no cabe en el tope de bloques. */
-    public static boolean scaleUp(int f) {
-        Clipboard n = original.scaled(f);
+    /**
+     * Cada bloque pasa a ser un cubo de f x f x f, o con smooth se amplía alisando las esquinas (Scale2x / Scale3x).
+     * false si no cabe en el tope de bloques.
+     */
+    public static boolean scaleUp(int f, boolean smooth) {
+        Clipboard n = smooth ? original.smoothScaled(f) : original.scaled(f);
         if (n == null) {
             return false;
         }
@@ -73,8 +78,11 @@ public final class Placement {
     public static boolean refresh() {
         boolean identity = angles[0] == 0f && angles[1] == 0f && angles[2] == 0f
                 && scale[0] == 1f && scale[1] == 1f && scale[2] == 1f;
+        boolean turned = angles[0] != 0f || angles[1] != 0f || angles[2] != 0f;
         Clipboard n = identity ? original
-                : original.transformed(angles[0], angles[1], angles[2], scale[0], scale[1], scale[2]);
+                : ROTSPRITE.get() && turned
+                        ? original.rotSprite(angles[0], angles[1], angles[2], scale[0], scale[1], scale[2])
+                        : original.transformed(angles[0], angles[1], angles[2], scale[0], scale[1], scale[2]);
         if (n == null) {
             return false;
         }

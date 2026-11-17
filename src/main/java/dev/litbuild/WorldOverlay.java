@@ -22,7 +22,8 @@ public final class WorldOverlay {
         if (!Selection.active && Targeting.hover == null && !Placement.active && Ruler.points.isEmpty() && !sym
                 && !BoxGizmo.visible && PathTool.nodes.isEmpty() && SlopeTool.target == null && !Modify.showPivot
                 && !(Annotations.show.get() && (!Annotations.items.isEmpty() || Annotations.current() != null))
-                && !BiomeView.active() && !Modelling.hasPoints() && BuilderTools.preview().isEmpty() && !BlockHighlights.any()) {
+                && !BiomeView.active() && !Modelling.hasPoints() && BuilderTools.preview().isEmpty() && !BlockHighlights.any()
+                && BuilderMode.expandedTarget == null) {
             return;
         }
         GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
@@ -96,6 +97,10 @@ public final class WorldOverlay {
                 box(h.getX() - r, h.getY() - r, h.getZ() - r, h.getX() + r + 1, h.getY() + r + 1, h.getZ() + r + 1,
                         0.4f, 1f, 0.4f);
             }
+        }
+        BlockPos ex = BuilderMode.expandedTarget;
+        if (ex != null) {
+            box(ex.getX(), ex.getY(), ex.getZ(), ex.getX() + 1, ex.getY() + 1, ex.getZ() + 1, 1f, 1f, 1f);
         }
         if (Targeting.hover != null) {
             int x = Targeting.hover.getX();
@@ -300,7 +305,56 @@ public final class WorldOverlay {
                 solid(p[0], p[1], p[2], h, c[0], c[1], c[2], alpha);
             }
         }
+        if (BoxGizmo.placementMode) {
+            placementHandles(axis);
+        }
         GL11.glDepthFunc(GL11.GL_LEQUAL);
+    }
+
+    /** Del gizmo del Placement: nodos de plano (cuadraditos), anillos de rotación y nodos de escala (cubitos claros). */
+    private static void placementHandles(float[][] axis) {
+        float[] hotColour = {1f, 0.9f, 0.2f};
+        for (int a = 0; a < 3; a++) {
+            int b = (a + 1) % 3, d = (a + 2) % 3;
+            boolean planeHot = BoxGizmo.hovered == BoxGizmo.PLANE + a || BoxGizmo.active == BoxGizmo.PLANE + a;
+            boolean ringHot = BoxGizmo.hovered == BoxGizmo.RING + a || BoxGizmo.active == BoxGizmo.RING + a;
+            boolean scaleHot = BoxGizmo.hovered == BoxGizmo.SCALE + a || BoxGizmo.active == BoxGizmo.SCALE + a;
+            for (int pass = 0; pass < 2; pass++) {
+                GL11.glDepthFunc(pass == 0 ? GL11.GL_LEQUAL : GL11.GL_GREATER);
+                float alpha = pass == 0 ? 0.92f : 0.35f;
+                // Plano: un cuadrado en el plano perpendicular al eje a.
+                float[] pc = planeHot ? hotColour : axis[a];
+                double[] p = BoxGizmo.center[BoxGizmo.PLANE + a];
+                double h = BoxGizmo.half * (planeHot ? 1.1 : 0.85);
+                double[] q = new double[3];
+                GL11.glColor4f(pc[0], pc[1], pc[2], alpha * 0.8f);
+                GL11.glBegin(GL11.GL_QUADS);
+                for (int k = 0; k < 4; k++) {
+                    q[0] = p[0];
+                    q[1] = p[1];
+                    q[2] = p[2];
+                    q[b] += k == 0 || k == 3 ? -h : h;
+                    q[d] += k < 2 ? -h : h;
+                    GL11.glVertex3d(q[0], q[1], q[2]);
+                }
+                GL11.glEnd();
+                // Anillo alrededor del eje a.
+                float[] rc = ringHot ? hotColour : axis[a];
+                GL11.glLineWidth(ringHot ? 4f : 2.5f);
+                GL11.glColor4f(rc[0], rc[1], rc[2], alpha);
+                GL11.glBegin(GL11.GL_LINE_LOOP);
+                for (int i = 0; i < BoxGizmo.ringSegments(); i++) {
+                    double[] w = BoxGizmo.ringPoint(a, i);
+                    GL11.glVertex3d(w[0], w[1], w[2]);
+                }
+                GL11.glEnd();
+                GL11.glLineWidth(2f);
+                // Escala: cubito claro junto a la flecha positiva.
+                float[] sc = scaleHot ? hotColour : new float[] {(axis[a][0] + 1f) / 2f, (axis[a][1] + 1f) / 2f, (axis[a][2] + 1f) / 2f};
+                double[] n = BoxGizmo.center[BoxGizmo.SCALE + a];
+                solid(n[0], n[1], n[2], BoxGizmo.half * (scaleHot ? 1.0 : 0.75), sc[0], sc[1], sc[2], alpha);
+            }
+        }
     }
 
     /** Cubo macizo de medio lado h con una luz distinta por cara. */

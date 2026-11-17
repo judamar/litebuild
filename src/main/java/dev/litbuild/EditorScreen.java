@@ -1560,7 +1560,7 @@ public class EditorScreen extends GuiScreen {
                 Modelling.rows.get(delRow).remove(delPoint);
             }
         }
-        hint("Botón derecho: añade un punto a la fila actual. Loft une filas contiguas punto a punto (con Flat, Catmull-Rom o Bezier); Triangle Strip y Fan usan todos los puntos en orden; Convex Hull cubre el casco convexo. E duplica el último punto (luego se edita en Points).");
+        hint("Botón derecho: añade un punto a la fila actual. Loft une filas contiguas punto a punto (con Flat, Catmull-Rom o Bezier; Smart Surface ignora las filas y triangula todos los puntos según su altura); Triangle Strip y Fan usan todos los puntos en orden; Convex Hull cubre el casco convexo. E duplica el último punto (luego se edita en Points).");
     }
 
     /** Voxeliza la superficie con el Active Block y la deja como Placement donde está (sin seguir al cursor). */
@@ -1650,6 +1650,10 @@ public class EditorScreen extends GuiScreen {
             tip("Solo fluye sobre bloques sólidos: sin cascadas.");
             ImGui.checkbox("Remove Fluids Without Sources", FluidBall.removeFluids);
             tip("Quita el agua o lava que fluye (sin fuente) alrededor antes de colocar la nueva.");
+            ImGui.checkbox("Fill Edges", FluidBall.fillEdges);
+            tip("Rellena las esquinas sueltas de la orilla y, si el fluido llena un recipiente cerrado, lo deja plano (todo fuentes).");
+            ImGui.sliderInt("Quality", FluidBall.quality, 1, 3);
+            tip("1 = el rombo de vanilla; 2 añade las diagonales y 3 los saltos de caballo: la mancha sale más redonda. Más de 3 no cambia nada. El juego sigue simulando el fluido después de colocarlo y puede retocar los niveles.");
         }
         hint(fluidType.get() == FluidBall.SNOW
                 ? "Mantén el botón derecho: capas de nieve sobre la superficie, más gruesas en el centro."
@@ -1842,6 +1846,8 @@ public class EditorScreen extends GuiScreen {
                 m.put("infiniteSources", FluidBall.infiniteSources);
                 m.put("requireSupport", FluidBall.requireSupport);
                 m.put("removeFluids", FluidBall.removeFluids);
+                m.put("fillEdges", FluidBall.fillEdges);
+                m.put("quality", FluidBall.quality);
                 break;
             case FLOODFILL:
                 m.put("limit", floodLimit);
@@ -3123,7 +3129,7 @@ public class EditorScreen extends GuiScreen {
             }
             hint(Placement.follow
                     ? "Sigue al cursor. Clic derecho: fijar."
-                    : "Fijada. Arrastra las flechas de colores (un eje) o el cubo blanco (libre) con el botón izquierdo, o usa flechas / AvPág / RePág. Clic derecho: volver a seguir el cursor.");
+                    : "Fijada. Con el botón izquierdo: flechas de colores = mover en un eje; cubo blanco = mover libre; cuadraditos = mover en dos ejes; anillos = girar (Ctrl = de 15 en 15°); cubitos claros = escalar (Ctrl = uniforme). También flechas / AvPág / RePág. Clic derecho: volver a seguir el cursor.");
             ImGui.checkbox("Keep Existing", Placement.KEEP_EXISTING);
             ImGui.sameLine();
             ImGui.checkbox("Paste Air", Placement.PASTE_AIR);
@@ -3153,16 +3159,20 @@ public class EditorScreen extends GuiScreen {
                     Placement.resetTransform();
                     Placement.refresh();
                 }
-                int f = buttonRow("Scale x2", "Scale x3", "Reset");
-                if (f == 0 || f == 1) {
-                    if (!Placement.scaleUp(f + 2)) {
-                        EditEngine.status = "Placement: demasiado grande para escalar";
-                    }
-                } else if (f == 2) {
+                if (ImGui.checkbox("RotSprite", Placement.ROTSPRITE)) {
+                    Placement.refresh();
+                }
+                tip("Al girar con ángulos libres: amplía x2 alisando los bordes, gira y reduce. Los diagonales salen más limpios; con formas grandes puede no caber y entonces gira como siempre.");
+                int f = buttonRow("Scale x2", "Scale x3");
+                int g = buttonRow("Smooth x2", "Smooth x3");
+                if ((f >= 0 || g >= 0) && !Placement.scaleUp((f >= 0 ? f : g) + 2, g >= 0)) {
+                    EditEngine.status = "Placement: demasiado grande para escalar";
+                }
+                if (ImGui.button("Reset transform", ImGui.getContentRegionAvailX(), 0)) {
                     Placement.resetTransform();
                     Placement.refresh();
                 }
-                hint("Los giros que no son múltiplos de 90° usan el bloque más cercano; la orientación de escaleras o troncos solo sigue el yaw en cuartos de vuelta.");
+                hint("Scale x2/x3 repite cada bloque en un cubo; Smooth x2/x3 es Scale2x/Scale3x: los escalones se alisan y las esquinas se redondean. Los giros que no son múltiplos de 90° usan el bloque más cercano; la orientación de escaleras o troncos solo sigue el yaw en cuartos de vuelta.");
             }
             int p = buttonRow("Paste", "Paste Copy", "Paste and Select", "Cancel");
             if (p == 0) {
