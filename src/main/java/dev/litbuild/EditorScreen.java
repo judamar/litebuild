@@ -3133,6 +3133,8 @@ public class EditorScreen extends GuiScreen {
             ImGui.checkbox("Keep Existing", Placement.KEEP_EXISTING);
             ImGui.sameLine();
             ImGui.checkbox("Paste Air", Placement.PASTE_AIR);
+            ImGui.checkbox("Local gizmo", Placement.LOCAL);
+            tip("Global: los ejes del gizmo son los del mundo. Local: siguen la rotación de la copia (flechas, planos y anillos); los cubitos de escala siempre siguen los ejes propios de la copia.");
             ImGui.checkbox("Merge Blocks", Placement.MERGE);
             tip("Dos losas del mismo material en mitades opuestas forman una losa doble, y las capas de nieve se suman.");
             if (!s.entities.isEmpty()) {

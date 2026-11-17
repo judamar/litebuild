@@ -123,16 +123,16 @@ public final class WorldOverlay {
         }
     }
 
-    /** Structure void (cian) y barreras (rojo) cercanos, de Edit Block Attributes. */
+    /** Structure void (cian) y malla de colisión (rojo) cercanos, de Edit Block Attributes. */
     private static void blockHighlights() {
         if (BuilderMode.showStructureVoid.get()) {
             for (BlockPos p : BlockHighlights.voids) {
                 box(p.getX(), p.getY(), p.getZ(), p.getX() + 1, p.getY() + 1, p.getZ() + 1, 0.3f, 0.9f, 1f);
             }
         }
-        if (BuilderMode.showBarriers.get()) {
-            for (BlockPos p : BlockHighlights.barriers) {
-                box(p.getX(), p.getY(), p.getZ(), p.getX() + 1, p.getY() + 1, p.getZ() + 1, 1f, 0.25f, 0.2f);
+        if (BuilderMode.showCollision.get()) {
+            for (double[] b : BlockHighlights.collision) {
+                box(b[0], b[1], b[2], b[3], b[4], b[5], 1f, 0.25f, 0.2f);
             }
         }
     }
@@ -290,7 +290,7 @@ public final class WorldOverlay {
             }
             float[] c = hot ? new float[] {1f, 0.9f, 0.2f} : axis[f / 2];
             double[] p = BoxGizmo.center[f];
-            int[] d = BoxGizmo.DIR[f];
+            double[] d = BoxGizmo.direction(f);
             double h = BoxGizmo.half * (hot ? 1.3 : 1.0);
             double stem = BoxGizmo.half * 1.6;
             for (int pass = 0; pass < 2; pass++) {
@@ -330,11 +330,10 @@ public final class WorldOverlay {
                 GL11.glColor4f(pc[0], pc[1], pc[2], alpha * 0.8f);
                 GL11.glBegin(GL11.GL_QUADS);
                 for (int k = 0; k < 4; k++) {
-                    q[0] = p[0];
-                    q[1] = p[1];
-                    q[2] = p[2];
-                    q[b] += k == 0 || k == 3 ? -h : h;
-                    q[d] += k < 2 ? -h : h;
+                    double sb = k == 0 || k == 3 ? -h : h, sd = k < 2 ? -h : h;
+                    for (int i = 0; i < 3; i++) {
+                        q[i] = p[i] + BoxGizmo.frame[b][i] * sb + BoxGizmo.frame[d][i] * sd;
+                    }
                     GL11.glVertex3d(q[0], q[1], q[2]);
                 }
                 GL11.glEnd();

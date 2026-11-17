@@ -52,7 +52,8 @@ public final class BuilderMode {
     public static final ImBoolean showKeys = new ImBoolean(false);
     public static final ImBoolean preventInteractions = new ImBoolean(false);
     public static final ImBoolean showStructureVoid = new ImBoolean(false);
-    public static final ImBoolean showBarriers = new ImBoolean(false);
+    /** Show Collision Mesh. */
+    public static final ImBoolean showCollision = new ImBoolean(false);
     /** Make Fluid Hitboxes Solid. */
     public static final ImBoolean fluidsSolid = new ImBoolean(false);
     /** Expand Hitboxes to Full Cube: se apunta a todos los bloques como si fueran cubos completos. */
