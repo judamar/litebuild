@@ -212,6 +212,8 @@ public class BuilderMenuScreen extends GuiScreen {
         ImGui.separatorText("Edit Block Attributes");
         ImGui.checkbox("Show structure void blocks", BuilderMode.showStructureVoid);
         ImGui.checkbox("Show barrier blocks (collision mesh)", BuilderMode.showBarriers);
+        ImGui.checkbox("Make fluid hitboxes solid", BuilderMode.fluidsSolid);
+        tip("Apuntas al agua y a la lava como a cualquier bloque: se pueden romper con el puño y colocar bloques contra su superficie.");
         ImGui.checkbox("Prevent interactions", BuilderMode.preventInteractions);
         tip("Con un bloque en la mano, el clic derecho sobre un cofre, puerta o similar coloca el bloque en vez de abrirlo.");
     }

@@ -11,7 +11,7 @@ import net.minecraft.block.Block;
 /** Estado de la ventana Tool Masks y su conversión a {@link MaskSpec}. */
 public final class Mask {
     public static final String[] TYPES = {
-        "Block", "Above", "Below", "Surface", "Can See Sky", "In Selection", "Y", "Neighbour", "Adjacent"
+        "Block", "Above", "Below", "Surface", "Can See Sky", "In Selection", "Y", "Neighbour", "Adjacent", "Lua"
     };
 
     public static final class Rule {
@@ -20,6 +20,8 @@ public final class Mask {
         public final ImString id = new ImString("minecraft:stone", 128);
         public final int[] meta = {-1};
         public final int[] y = {0, 255};
+        /** Código de una regla Lua: usa x, y, z, getBlock, isSolid, blocks...; devuelve true para dejar pasar el bloque. */
+        public final ImString lua = new ImString("-- x, y, z: el bloque que se evalúa. Devuelve true para dejarlo pasar.\nreturn isSolid(x, y, z) and y > 64", 4096);
 
         /** ¿Usa un bloque este tipo de regla? */
         public boolean needsBlock() {
@@ -50,11 +52,13 @@ public final class Mask {
         int[] meta = new int[n];
         int[] y1 = new int[n];
         int[] y2 = new int[n];
+        String[] lua = new String[n];
         for (int i = 0; i < n; i++) {
             Rule r = rules.get(i);
             type[i] = r.type.get();
             not[i] = r.not.get();
             meta[i] = r.meta[0];
+            lua[i] = type[i] == MaskSpec.LUA ? r.lua.get() : null;
             y1[i] = Math.min(r.y[0], r.y[1]);
             y2[i] = Math.max(r.y[0], r.y[1]);
             if (r.needsBlock()) {
@@ -70,6 +74,6 @@ public final class Mask {
                 ? new int[] {Selection.min(0), Selection.min(1), Selection.min(2),
                     Selection.max(0), Selection.max(1), Selection.max(2)}
                 : null;
-        return new MaskSpec(type, not, block, meta, y1, y2, box, Selection.mask);
+        return new MaskSpec(type, not, block, meta, y1, y2, box, Selection.mask, lua);
     }
 }

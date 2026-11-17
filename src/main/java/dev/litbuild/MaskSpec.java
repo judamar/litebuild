@@ -13,7 +13,7 @@ import net.minecraft.world.World;
  */
 public final class MaskSpec {
     public static final int BLOCK = 0, ABOVE = 1, BELOW = 2, SURFACE = 3, SKY = 4, IN_SELECTION = 5, Y = 6,
-            NEIGHBOUR = 7, ADJACENT = 8;
+            NEIGHBOUR = 7, ADJACENT = 8, LUA = 9;
 
     private static final int[][] FACES = {{1, 0, 0}, {-1, 0, 0}, {0, 1, 0}, {0, -1, 0}, {0, 0, 1}, {0, 0, -1}};
     private static final int[][] SIDES = {{1, 0, 0}, {-1, 0, 0}, {0, 0, 1}, {0, 0, -1}};
@@ -27,9 +27,15 @@ public final class MaskSpec {
     /** Selección en el momento de crear la máscara (para IN_SELECTION); box null si no había. */
     private final int[] box;
     private final Set<Long> selMask;
+    /** Código de cada regla Lua (null en las demás) y su intérprete, creado la primera vez que se usa en el hilo del servidor. */
+    private final String[] lua;
+    private ScriptRunner[] runners;
+    private boolean[] luaFailed;
+    private World runnerWorld;
 
     public MaskSpec(int[] type, boolean[] not, Block[] block, int[] meta, int[] y1, int[] y2, int[] box,
-            Set<Long> selMask) {
+            Set<Long> selMask, String[] lua) {
+        this.lua = lua;
         this.type = type;
         this.not = not;
         this.block = block;
@@ -86,8 +92,32 @@ public final class MaskSpec {
                     }
                 }
                 return false;
+            case LUA:
+                return luaTest(i, w, x, y, z);
             default:
                 return true;
+        }
+    }
+
+    /** Evalúa la regla Lua i; si el script falla (sintaxis, error o demasiado largo) la regla no deja pasar nada y se avisa una vez. */
+    private boolean luaTest(int i, World w, int x, int y, int z) {
+        if (runnerWorld != w || runners == null) {
+            runners = new ScriptRunner[type.length];
+            luaFailed = new boolean[type.length];
+            runnerWorld = w;
+        }
+        if (luaFailed[i]) {
+            return false;
+        }
+        try {
+            if (runners[i] == null) {
+                runners[i] = new ScriptRunner(w, lua[i]);
+            }
+            return runners[i].test(x, y, z);
+        } catch (org.luaj.vm2.LuaError e) {
+            luaFailed[i] = true;
+            EditEngine.status = "Tool Masks (Lua), regla " + (i + 1) + ": " + e.getMessage();
+            return false;
         }
     }
 

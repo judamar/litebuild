@@ -53,6 +53,8 @@ public final class BuilderMode {
     public static final ImBoolean preventInteractions = new ImBoolean(false);
     public static final ImBoolean showStructureVoid = new ImBoolean(false);
     public static final ImBoolean showBarriers = new ImBoolean(false);
+    /** Make Fluid Hitboxes Solid. */
+    public static final ImBoolean fluidsSolid = new ImBoolean(false);
 
     /** Alcance de vanilla en creativo: más allá de esto el servidor rechaza romper o colocar. */
     private static final double VANILLA_REACH = 5.5;

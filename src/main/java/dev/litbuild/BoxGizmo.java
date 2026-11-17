@@ -17,7 +17,12 @@ public final class BoxGizmo {
     /** Cara que se está arrastrando. */
     public static int active = -1;
     /** Centro de cada manejador en el mundo y su medio lado. */
-    public static final double[][] center = new double[6][3];
+    public static final double[][] center = new double[7][3];
+    /** true = mueve el Placement (flechas y nodo central) en vez de estirar la selección. */
+    public static boolean placementMode;
+    private static boolean centerDrag;
+    private static double centerDist;
+    private static int startPos;
     public static double half = 0.3;
 
     private static double offset = 0.5;
@@ -52,7 +57,7 @@ public final class BoxGizmo {
             return;
         }
         float best = radius * radius;
-        for (int f = 0; f < 6; f++) {
+        for (int f = 0; f < (placementMode ? 7 : 6); f++) {
             float[] p = Targeting.project(center[f][0], center[f][1], center[f][2]);
             if (p == null) {
                 continue;
@@ -73,8 +78,14 @@ public final class BoxGizmo {
     }
 
     private static void layout() {
-        double[] lo = {Selection.min(0), Selection.min(1), Selection.min(2)};
-        double[] hi = {Selection.max(0) + 1.0, Selection.max(1) + 1.0, Selection.max(2) + 1.0};
+        double[] lo, hi;
+        if (placementMode && Placement.shape != null) {
+            lo = new double[] {Placement.pos[0], Placement.pos[1], Placement.pos[2]};
+            hi = new double[] {lo[0] + Placement.shape.sx, lo[1] + Placement.shape.sy, lo[2] + Placement.shape.sz};
+        } else {
+            lo = new double[] {Selection.min(0), Selection.min(1), Selection.min(2)};
+            hi = new double[] {Selection.max(0) + 1.0, Selection.max(1) + 1.0, Selection.max(2) + 1.0};
+        }
         double[] mid = {(lo[0] + hi[0]) / 2, (lo[1] + hi[1]) / 2, (lo[2] + hi[2]) / 2};
         // Más lejos, más grande, para que siga siendo fácil de pillar.
         double dx = mid[0] - Targeting.camX, dy = mid[1] - (Targeting.camY + 1.62), dz = mid[2] - Targeting.camZ;
@@ -88,6 +99,7 @@ public final class BoxGizmo {
             }
             center[f][a] = f % 2 == 0 ? hi[a] + offset : lo[a] - offset;
         }
+        System.arraycopy(mid, 0, center[6], 0, 3);
     }
 
     /** Empieza el arrastre del manejador bajo el cursor. */
@@ -96,15 +108,32 @@ public final class BoxGizmo {
         if (f < 0) {
             return;
         }
+        if (f == 6) {
+            // Nodo central: el Placement sigue al cursor manteniendo la distancia a la cámara.
+            centerDrag = true;
+            centerDist = Math.sqrt(Math.pow(center[6][0] - Targeting.camX, 2) + Math.pow(center[6][1] - Targeting.camY, 2)
+                    + Math.pow(center[6][2] - Targeting.camZ, 2));
+            active = 6;
+            dragging = true;
+            return;
+        }
         axis = f / 2;
+        if (placementMode) {
+            startPos = Placement.pos[axis];
+            Placement.follow = false;
+        }
         boolean positive = f % 2 == 0;
         // El extremo (p1 o p2) que forma esa cara; la selección no cambia de extremos durante el arrastre.
-        if (positive) {
+        if (placementMode) {
+            endpoint = null;
+        } else if (positive) {
             endpoint = Selection.p1[axis] >= Selection.p2[axis] ? Selection.p1 : Selection.p2;
         } else {
             endpoint = Selection.p1[axis] <= Selection.p2[axis] ? Selection.p1 : Selection.p2;
         }
-        startValue = endpoint[axis];
+        if (!placementMode) {
+            startValue = endpoint[axis];
+        }
         float[] a = Targeting.project(center[f][0], center[f][1], center[f][2]);
         float[] b = Targeting.project(center[f][0] + DIR[f][0], center[f][1] + DIR[f][1], center[f][2] + DIR[f][2]);
         if (a == null || b == null) {
@@ -124,9 +153,26 @@ public final class BoxGizmo {
 
     /** Mueve la cara según lo que ha avanzado el ratón sobre la dirección del eje en pantalla. */
     public static void drag(float mx, float my) {
+        if (centerDrag) {
+            net.minecraft.util.math.Vec3d p = Targeting.pointAt(mx, my, centerDist);
+            if (p != null && Placement.shape != null) {
+                Placement.pos[0] = (int) Math.floor(p.x - Placement.shape.sx / 2.0 + 0.5);
+                Placement.pos[1] = Math.max(0, (int) Math.floor(p.y - Placement.shape.sy / 2.0 + 0.5));
+                Placement.pos[2] = (int) Math.floor(p.z - Placement.shape.sz / 2.0 + 0.5);
+                Placement.follow = false;
+            }
+            return;
+        }
         float blocks = ((mx - startMx) * vx + (my - startMy) * vy) / vlen2;
         int n = Math.round(blocks);
         boolean positive = active % 2 == 0;
+        if (placementMode) {
+            Placement.pos[axis] = startPos + (positive ? n : -n);
+            if (axis == 1) {
+                Placement.pos[1] = Math.max(0, Math.min(255, Placement.pos[1]));
+            }
+            return;
+        }
         int value = startValue + (positive ? n : -n);
         int other = (endpoint == Selection.p1 ? Selection.p2 : Selection.p1)[axis];
         // La cara no puede cruzar a la opuesta: como mínimo queda un bloque.
@@ -140,6 +186,7 @@ public final class BoxGizmo {
 
     public static void end() {
         dragging = false;
+        centerDrag = false;
         active = -1;
     }
 }

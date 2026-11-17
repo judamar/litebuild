@@ -22,6 +22,8 @@ public final class Placement {
     public static final ImBoolean PASTE_AIR = new ImBoolean(false);
     /** Pega también las entidades copiadas con Copy With Entities. */
     public static final ImBoolean PASTE_ENTITIES = new ImBoolean(true);
+    /** Merge Blocks: al pegar, losas contrarias forman losa doble y la nieve se suma. */
+    public static final ImBoolean MERGE = new ImBoolean(false);
 
     private Placement() {
     }

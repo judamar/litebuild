@@ -24,6 +24,9 @@
     },
     "dev/litbuild/mixin/MixinPlayerControllerMP": {
       "getBlockReachDistance": "Lbsa;d()F"
+    },
+    "dev/litbuild/mixin/MixinBlockLiquid": {
+      "canCollideCheck": "Laru;a(Lawt;Z)Z"
     }
   },
   "data": {
@@ -52,6 +55,9 @@
       },
       "dev/litbuild/mixin/MixinPlayerControllerMP": {
         "getBlockReachDistance": "Lbsa;d()F"
+      },
+      "dev/litbuild/mixin/MixinBlockLiquid": {
+        "canCollideCheck": "Laru;a(Lawt;Z)Z"
       }
     }
   }

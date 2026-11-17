@@ -272,8 +272,17 @@ public final class WorldOverlay {
     /** Los seis manejadores de Box Select: cubitos de color por eje (amarillo si están bajo el cursor). */
     private static void gizmo() {
         float[][] axis = {{1f, 0.3f, 0.3f}, {0.3f, 1f, 0.3f}, {0.4f, 0.55f, 1f}};
-        for (int f = 0; f < 6; f++) {
+        for (int f = 0; f < (BoxGizmo.placementMode ? 7 : 6); f++) {
             boolean hot = f == BoxGizmo.hovered || f == BoxGizmo.active;
+            if (f == 6) {
+                double[] c = BoxGizmo.center[6];
+                double hh = BoxGizmo.half * (hot ? 1.5 : 1.15);
+                for (int pass = 0; pass < 2; pass++) {
+                    GL11.glDepthFunc(pass == 0 ? GL11.GL_LEQUAL : GL11.GL_GREATER);
+                    solid(c[0], c[1], c[2], hh, 1f, hot ? 0.9f : 1f, hot ? 0.2f : 1f, pass == 0 ? 0.92f : 0.35f);
+                }
+                continue;
+            }
             float[] c = hot ? new float[] {1f, 0.9f, 0.2f} : axis[f / 2];
             double[] p = BoxGizmo.center[f];
             int[] d = BoxGizmo.DIR[f];

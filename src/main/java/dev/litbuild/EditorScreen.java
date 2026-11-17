@@ -1047,6 +1047,9 @@ public class EditorScreen extends GuiScreen {
             scriptCheck = null;
         }
         ImGui.inputTextMultiline("##script", scriptCode, ImGui.getContentRegionAvailX(), ImGui.getFrameHeight() * 11);
+        if (ImGui.collapsingHeader("Highlighted preview")) {
+            LuaHighlight.draw("scriptview", scriptCode.get(), ImGui.getFrameHeight() * 11);
+        }
         java.util.List<ScriptBrush.Var> vars = ScriptBrush.vars(scriptCode.get());
         if (!vars.isEmpty()) {
             ImGui.separatorText("Variables");
@@ -1638,12 +1641,38 @@ public class EditorScreen extends GuiScreen {
     private void fluidOptions() {
         ImGui.combo("Fluid", fluidType, FluidBall.TYPES);
         ImGui.sliderInt("Radius", Brush.radius, 1, 24);
+        if (fluidType.get() != FluidBall.SNOW) {
+            ImGui.sliderInt("Flow Length", FluidBall.flowLength, 0, 7);
+            tip("Cuántos bloques se extiende el fluido en horizontal desde las fuentes; cae por los huecos. 0 = solo las fuentes. La lava llega a la mitad.");
+            ImGui.checkbox("Infinite Sources", FluidBall.infiniteSources);
+            tip("La región inicial es toda de fuentes. Desactivado, es una sola fuente en el centro.");
+            ImGui.checkbox("Require Support To Flow", FluidBall.requireSupport);
+            tip("Solo fluye sobre bloques sólidos: sin cascadas.");
+            ImGui.checkbox("Remove Fluids Without Sources", FluidBall.removeFluids);
+            tip("Quita el agua o lava que fluye (sin fuente) alrededor antes de colocar la nueva.");
+        }
         hint(fluidType.get() == FluidBall.SNOW
                 ? "Mantén el botón derecho: capas de nieve sobre la superficie, más gruesas en el centro."
                 : "Mantén el botón derecho: una esfera de fuentes que reemplaza aire y bloques no sólidos; el fluido fluye solo, como en vanilla. Ctrl+Z quita las fuentes y el flujo se retira.");
     }
 
     /** Ventana con los textos de las anotaciones: editarlos, ir hasta ellos o borrarlos. */
+    private static String encode(String s) {
+        try {
+            return java.net.URLEncoder.encode(s, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException e) {
+            return "";
+        }
+    }
+
+    private static String decode(String s) {
+        try {
+            return java.net.URLDecoder.decode(s, "UTF-8");
+        } catch (java.io.UnsupportedEncodingException | IllegalArgumentException e) {
+            return "";
+        }
+    }
+
     /** Sección "Presets": guardar los ajustes con un nombre y cargar o borrar los guardados. */
     private void presetBlock(String toolName, Map<String, Object> holders) {
         if (holders == null) {
@@ -1809,6 +1838,10 @@ public class EditorScreen extends GuiScreen {
             case FLUID:
                 m.put("radius", Brush.radius);
                 m.put("fluid", fluidType);
+                m.put("flowLength", FluidBall.flowLength);
+                m.put("infiniteSources", FluidBall.infiniteSources);
+                m.put("requireSupport", FluidBall.requireSupport);
+                m.put("removeFluids", FluidBall.removeFluids);
                 break;
             case FLOODFILL:
                 m.put("limit", floodLimit);
@@ -2450,6 +2483,12 @@ public class EditorScreen extends GuiScreen {
                     blockField("mask", r.id, r.meta, -1);
                 } else if (r.type.get() == MaskSpec.Y) {
                     ImGui.sliderInt2("Y range", r.y, 0, 255);
+                } else if (r.type.get() == MaskSpec.LUA) {
+                    ImGui.inputTextMultiline("##lua", r.lua, ImGui.getContentRegionAvailX(), ImGui.getFrameHeight() * 5);
+                    if (ImGui.collapsingHeader("Highlighted preview##luamask")) {
+                        LuaHighlight.draw("luamaskview", r.lua.get(), ImGui.getFrameHeight() * 5);
+                    }
+                    hint("Lua Tool Mask: el script se ejecuta en cada bloque del pincel con x, y, z y las funciones del Script Brush (getBlock, isSolid, blocks...). Si devuelve true, el bloque pasa. Máximo 200 000 instrucciones por bloque.");
                 }
                 boolean remove = ImGui.button("Remove");
                 ImGui.popID();
@@ -2472,7 +2511,7 @@ public class EditorScreen extends GuiScreen {
                     for (Mask.Rule r : Mask.rules) {
                         sb.append(sb.length() == 0 ? "" : ";").append(r.type.get()).append(',').append(r.not.get()).append(',')
                                 .append(r.id.get()).append(',').append(r.meta[0]).append(',').append(r.y[0]).append(',')
-                                .append(r.y[1]);
+                                .append(r.y[1]).append(',').append(encode(r.lua.get()));
                     }
                     return sb.toString();
                 }
@@ -2492,6 +2531,9 @@ public class EditorScreen extends GuiScreen {
                         r.meta[0] = Integer.parseInt(t[3]);
                         r.y[0] = Integer.parseInt(t[4]);
                         r.y[1] = Integer.parseInt(t[5]);
+                        if (t.length > 6) {
+                            r.lua.set(decode(t[6]));
+                        }
                         Mask.rules.add(r);
                     }
                     if (Mask.rules.isEmpty()) {
@@ -3081,10 +3123,12 @@ public class EditorScreen extends GuiScreen {
             }
             hint(Placement.follow
                     ? "Sigue al cursor. Clic derecho: fijar."
-                    : "Fijada. Flechas / AvPág / RePág: mover. Clic derecho: volver a seguir el cursor.");
+                    : "Fijada. Arrastra las flechas de colores (un eje) o el cubo blanco (libre) con el botón izquierdo, o usa flechas / AvPág / RePág. Clic derecho: volver a seguir el cursor.");
             ImGui.checkbox("Keep Existing", Placement.KEEP_EXISTING);
             ImGui.sameLine();
             ImGui.checkbox("Paste Air", Placement.PASTE_AIR);
+            ImGui.checkbox("Merge Blocks", Placement.MERGE);
+            tip("Dos losas del mismo material en mitades opuestas forman una losa doble, y las capas de nieve se suman.");
             if (!s.entities.isEmpty()) {
                 ImGui.checkbox("Paste Entities (" + s.entities.size() + ")", Placement.PASTE_ENTITIES);
             }
@@ -3301,8 +3345,9 @@ public class EditorScreen extends GuiScreen {
 
         // Manejadores de Box Select: arrastrar una cara con el botón izquierdo la estira o la encoge.
         float mx = io.getMousePosX(), my = io.getMousePosY();
-        boolean gizmoUsable = tool == BOX && !Placement.active && Selection.active && Selection.mask == null
-                && (!overUi || BoxGizmo.dragging);
+        BoxGizmo.placementMode = Placement.active;
+        boolean gizmoUsable = Placement.active ? !Placement.follow && (!overUi || BoxGizmo.dragging)
+                : tool == BOX && Selection.active && Selection.mask == null && (!overUi || BoxGizmo.dragging);
         boolean leftNow = ImGui.isMouseDown(ImGuiMouseButton.Left);
         BoxGizmo.update(gizmoUsable, !leftNow || ImGui.isMouseClicked(ImGuiMouseButton.Left, false), mx, my,
                 ImGui.getFrameHeight() * 0.9f);

@@ -471,13 +471,14 @@ public final class EditEngine {
         final boolean keep = Placement.KEEP_EXISTING.get();
         final boolean air = Placement.PASTE_AIR.get();
         final boolean pasteEntities = Placement.PASTE_ENTITIES.get();
+        final boolean merge = Placement.MERGE.get();
         final int dim = dim();
         runOnServer(new ServerTask() {
             @Override
             public void run(IntegratedServer server) {
                 World w = server.getWorld(dim);
                 Builder b = new Builder(w, dim, c.states.length, false);
-                place(b, c, ox, oy, oz, air, keep);
+                place(b, c, ox, oy, oz, air, keep, merge);
                 b.commit(name);
                 if (pasteEntities) {
                     for (NBTTagCompound src : c.entities) {
@@ -733,6 +734,11 @@ public final class EditEngine {
 
     /** Coloca el portapapeles con su esquina mínima en (ox, oy, oz). */
     private static void place(Builder b, Clipboard c, int ox, int oy, int oz, boolean pasteAir, boolean keep) {
+        place(b, c, ox, oy, oz, pasteAir, keep, false);
+    }
+
+    /** Como place; con merge, lo que se puede fundir con lo que hay (losas, nieve) se funde. */
+    private static void place(Builder b, Clipboard c, int ox, int oy, int oz, boolean pasteAir, boolean keep, boolean merge) {
         for (int y = 0; y < c.sy; y++) {
             for (int z = 0; z < c.sz; z++) {
                 for (int x = 0; x < c.sx; x++) {
@@ -741,7 +747,15 @@ public final class EditEngine {
                     if (id == Clipboard.AIR && !pasteAir) {
                         continue;
                     }
-                    b.set(ox + x, oy + y, oz + z, Block.getStateById(id), c.tiles.get(i), keep);
+                    IBlockState next = Block.getStateById(id);
+                    if (merge) {
+                        IBlockState old = b.peek(ox + x, oy + y, oz + z);
+                        IBlockState merged = old == null ? null : Merge.merge(old, next);
+                        if (merged != null) {
+                            next = merged;
+                        }
+                    }
+                    b.set(ox + x, oy + y, oz + z, next, c.tiles.get(i), keep);
                 }
             }
         }

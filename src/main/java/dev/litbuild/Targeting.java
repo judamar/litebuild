@@ -130,6 +130,22 @@ public final class Targeting {
         return new float[] {OUT.get(0), VIEWPORT.get(3) - OUT.get(1) - 1, depth};
     }
 
+    /** El punto del mundo a distancia dist de la cámara bajo el píxel (mouseX, mouseY); null si no hay cámara. */
+    public static Vec3d pointAt(float mouseX, float mouseY, double dist) {
+        if (!valid) {
+            return null;
+        }
+        float winY = VIEWPORT.get(3) - mouseY - 1;
+        Vec3d near = unproject(mouseX, winY, 0f);
+        Vec3d far = unproject(mouseX, winY, 1f);
+        if (near == null || far == null) {
+            return null;
+        }
+        Vec3d dir = far.subtract(near).normalize();
+        Vec3d start = new Vec3d(camX + near.x, camY + near.y, camZ + near.z);
+        return start.addVector(dir.x * dist, dir.y * dist, dir.z * dist);
+    }
+
     private static Vec3d unproject(float x, float y, float z) {
         OUT.clear();
         if (!GLU.gluUnProject(x, y, z, MODELVIEW, PROJECTION, VIEWPORT, OUT)) {

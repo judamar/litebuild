@@ -147,6 +147,29 @@ final class ScriptRunner {
         }
     }
 
+    /** Instrucciones de Lua permitidas por bloque al usar el script como máscara (se evalúa en cada bloque del pincel). */
+    private static final int MASK_BUDGET = 200_000;
+    private static final Terrain.Setter NOOP = new Terrain.Setter() {
+        @Override
+        public void set(int x, int y, int z, IBlockState state) {
+        }
+    };
+
+    /** Lua Tool Mask: ejecuta el script en (x, y, z) y devuelve si lo que retorna es verdadero. Sin colocar bloques. */
+    boolean test(int x, int y, int z) {
+        this.out = NOOP;
+        sets = 0;
+        sethook.invoke(LuaValue.varargsOf(hook, LuaValue.valueOf(""), LuaValue.valueOf(MASK_BUDGET)));
+        try {
+            g.set("x", x);
+            g.set("y", y);
+            g.set("z", z);
+            return chunk.call().toboolean();
+        } finally {
+            sethook.call(LuaValue.NIL);
+        }
+    }
+
     private void exec(int x, int y, int z) {
         g.set("x", x);
         g.set("y", y);

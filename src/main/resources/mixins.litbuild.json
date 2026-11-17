@@ -11,7 +11,8 @@
 		"MixinBlockFarmland",
 		"MixinMinecraft",
 		"MixinInventoryPlayer",
-		"MixinPlayerControllerMP"
+		"MixinPlayerControllerMP",
+		"MixinBlockLiquid"
 	],
 	"injectors": {
 		"defaultRequire": 0
