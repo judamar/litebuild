@@ -21,7 +21,7 @@ public final class Mask {
         public final int[] meta = {-1};
         public final int[] y = {0, 255};
         /** Código de una regla Lua: usa x, y, z, getBlock, isSolid, blocks...; devuelve true para dejar pasar el bloque. */
-        public final ImString lua = new ImString(I18n.tr("-- x, y, z: el bloque que se evalúa. Devuelve true para dejarlo pasar.") + "\nreturn isSolid(x, y, z) and y > 64", 4096);
+        public final ImString lua = new ImString(I18n.tr("-- x, y, z: el bloque que se evalúa. Devuelve true para dejarlo pasar.") + "\nreturn isSolid(getBlock(x, y, z)) and y > 64", 4096);
 
         /** ¿Usa un bloque este tipo de regla? */
         public boolean needsBlock() {

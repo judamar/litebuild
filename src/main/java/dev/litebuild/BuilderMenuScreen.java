@@ -145,13 +145,15 @@ public class BuilderMenuScreen extends GuiScreen {
         ImGui.separatorText("Capabilities");
         for (int i = 0; i < BuilderMode.CAPABILITIES.length; i++) {
             ImBoolean v = new ImBoolean(BuilderMode.isOn(i));
-            if (v.get()) {
+            // checkbox() cambia v al hacer clic: el push y el pop deben usar el valor de antes
+            boolean on = v.get();
+            if (on) {
                 ImGui.pushStyleColor(ImGuiCol.Text, 0.45f, 0.95f, 0.55f, 1f);
             }
             if (ImGui.checkbox(BuilderMode.CAPABILITIES[i], v)) {
                 BuilderMode.toggle(i);
             }
-            if (v.get()) {
+            if (on) {
                 ImGui.popStyleColor();
             }
             tip(describe(i));
