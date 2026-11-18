@@ -84,7 +84,6 @@ public class LiteModLiteBuild implements LiteMod, Tickable, ShutdownListener, Po
     @Override
     public void onTick(Minecraft mc, float partialTicks, boolean inGame, boolean clock) {
         WorldPanels.applyFlight();
-        NoClip.tick(mc);
         FluidOpacity.tick(UiSettings.fluidOpacity);
         Brightness.tick(mc);
         menuKeyCode = builderMenu.getKeyCode();

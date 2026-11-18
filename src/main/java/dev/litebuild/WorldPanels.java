@@ -117,8 +117,8 @@ public final class WorldPanels {
                     NoClip.toggle();
                 }
                 ImGui.sameLine();
-                Txt.disabled("(creativo: atraviesas bloques volando)");
-                if (NoClip.enabled && NoClip.hits == 0) {
+                Txt.disabled("(creativo: atraviesas bloques volando; si dejas de volar, vuelves a chocar)");
+                if (NoClip.enabled && NoClip.hits == 0 && NoClip.flying()) {
                     Txt.wrapped("Aún no ha actuado: muévete. Si sigue sin atravesar bloques, los mixins no se aplicaron (mira logs/latest.log).");
                 }
                 String[] modes = {"Creative", "Survival", "Spectator"};

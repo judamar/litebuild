@@ -8,7 +8,8 @@ import net.minecraft.entity.player.EntityPlayer;
 /**
  * No Clip: el jugador atraviesa bloques. Los mixins de {@code dev.litebuild.mixin} consultan {@link #applies} en
  * Entity.move (cliente y servidor integrado, que valida la posición) y en pushOutOfBlocks / isEntityInsideOpaqueBlock.
- * Hace falta poder volar (creativo): sin vuelo la gravedad te hace caer a través del suelo.
+ * Solo actúa mientras vuelas (creativo): sin vuelo la gravedad te haría caer a través del suelo. Al activarlo se
+ * empieza a volar, pero se puede dejar de volar (doble salto) para volver a chocar con los bloques.
  */
 public final class NoClip {
     public static volatile boolean enabled;
@@ -27,22 +28,27 @@ public final class NoClip {
         if (me == null || !me.getUniqueID().equals(e.getUniqueID())) {
             return false;
         }
+        if (!me.capabilities.isFlying) {
+            return false;
+        }
         hits++;
         return true;
     }
 
-    /** Cada tick del cliente: con No Clip se fuerza el vuelo (si el modo lo permite). */
-    public static void tick(Minecraft mc) {
-        EntityPlayerSP p = mc.player;
-        if (enabled && p != null && p.capabilities.allowFlying && !p.capabilities.isFlying) {
-            p.capabilities.isFlying = true;
-            p.sendPlayerAbilities();
-        }
+    /** true si el jugador local está volando (No Clip solo actúa entonces). */
+    public static boolean flying() {
+        EntityPlayerSP p = Minecraft.getMinecraft().player;
+        return p != null && p.capabilities.isFlying;
     }
 
     public static void toggle() {
         enabled = !enabled;
         hits = 0;
+        EntityPlayerSP p = Minecraft.getMinecraft().player;
+        if (enabled && p != null && p.capabilities.allowFlying && !p.capabilities.isFlying) {
+            p.capabilities.isFlying = true;
+            p.sendPlayerAbilities();
+        }
         EditEngine.status = "No Clip " + (enabled ? "activado" : "desactivado");
     }
 }

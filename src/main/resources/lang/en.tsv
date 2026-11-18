@@ -234,7 +234,7 @@ Distort: la selección es demasiado grande	Distort: the selection is too large
 {0}: no queda nada seleccionado (no se ha cambiado)	{0}: nothing is left selected (unchanged)
 Sin bloque bajo el cursor	No block under the cursor
 Solo disponible en mundos de un jugador.	Only available in singleplayer worlds.
-(creativo: atraviesas bloques volando)	(creative: you pass through blocks while flying)
+(creativo: atraviesas bloques volando; si dejas de volar, vuelves a chocar)	(creative: you pass through blocks while flying; stop flying and you collide again)
 Aún no ha actuado: muévete. Si sigue sin atravesar bloques, los mixins no se aplicaron (mira logs/latest.log).	It has not acted yet: move around. If you still cannot pass through blocks, the mixins were not applied (check logs/latest.log).
 Sin heightmap: se usa el desvanecido suave.	No heightmap: the soft falloff is used.
 Cargando...	Loading...
