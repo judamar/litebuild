@@ -50,7 +50,7 @@ import net.minecraft.world.World;
  * botón central = copiar bloque, WASD/Espacio/Shift = volar. Right Shift o Escape cierran.
  */
 public class EditorScreen extends GuiScreen {
-    // Las primeras IMPLEMENTED herramientas funcionan; el resto es el plan (ver docs/).
+    // Las primeras IMPLEMENTED herramientas funcionan.
     private static final String[] TOOLS = {
         "Box Select", "Magic Select", "Painter", "Noise Painter", "Freehand Draw", "Shape", "Smooth", "Melt",
         "Weld", "Extrude", "Ruler", "Elevation", "Distort", "Text", "Symmetry", "Roughen", "Shatter", "Rock",

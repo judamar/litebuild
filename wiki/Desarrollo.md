@@ -75,4 +75,4 @@ El workflow comprueba que la etiqueta es `v` + la versión de `build.gradle` y q
 
 - **Reimplementación de sala limpia.** No decompilar ni examinar el `.jar` de Axiom (su EULA lo prohíbe): todo se escribe a partir de su documentación pública. No copiar código, recursos ni texturas de Axiom.
 - **Licencia:** todos los derechos reservados (`LICENSE`); los componentes empaquetados (imgui-java, Dear ImGui, LuaJ) son MIT (`THIRD-PARTY-NOTICES.md`).
-- Antes de publicar el repositorio o compartir el `.jar`: la carpeta `docs/` (resúmenes de la documentación de Axiom) hay que quitarla o reescribirla.
+- No añadas al repositorio resúmenes ni traducciones de la documentación de Axiom: tiene sus propios derechos de autor. Si los tienes en local, una carpeta `docs/` queda ignorada por git.

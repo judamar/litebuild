@@ -1,6 +1,6 @@
 # LiteBuild
 
-Mod cliente para Minecraft 1.12.2 con LiteLoader, inspirado en la funcionalidad de Axiom (reimplementación propia a partir de su documentación pública, ver `docs/`). La interfaz usa Dear ImGui (imgui-java) con un backend propio para LWJGL 2.
+**Inspirado en [Axiom](https://axiomdocs.moulberry.com/)**, el mod de edición de mundo de Moulberry. LiteBuild es un mod cliente para Minecraft 1.12.2 con LiteLoader que reimplementa por su cuenta funciones parecidas, a partir de la documentación pública de Axiom y sin usar su código (no está afiliado a Axiom ni a su autor). La interfaz usa Dear ImGui (imgui-java) con un backend propio para LWJGL 2.
 
 **Documentación y tutoriales:** carpeta [`wiki/`](wiki/Home.md) (instalación, primeros pasos, tutoriales, referencia de cada herramienta, Lua, Builder Mode y solución de problemas). Este README es la referencia técnica resumida de las funciones.
 
@@ -156,7 +156,7 @@ Solo funciona en mundos de un jugador (edita el mundo del servidor integrado). U
 
 **Licencia.** `LICENSE`: todos los derechos reservados, uso interno. Los avisos de lo que va empaquetado están en `THIRD-PARTY-NOTICES.md` y se copian dentro del `.litemod` (`META-INF/`). Si algún día se comparte, hay que cambiar `LICENSE` por la que se elija (MIT o Apache-2.0, por ejemplo).
 
-**Antes de publicarlo o compartirlo:** quitar o reescribir la carpeta `docs/` (son resúmenes y traducciones de la documentación de Axiom, que tiene sus propios derechos de autor) y revisar el nombre y los textos de la interfaz. El repositorio es privado y las releases solo llevan el `.litemod`.
+**Repositorio y releases.** Las releases solo llevan el `.litemod` y `SHA256SUMS.txt`. Los resúmenes de la documentación de Axiom con los que se trabajó (que tiene sus propios derechos de autor) no forman parte del repositorio.
 
 **Lo que va dentro del `.jar`** (copiado por el plugin de Gradle, ver `build.gradle`):
 

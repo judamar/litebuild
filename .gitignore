@@ -19,3 +19,6 @@ out/
 # Sistema
 .DS_Store
 Thumbs.db
+
+# Notas locales (resúmenes de la documentación de Axiom: no se publican)
+docs/
