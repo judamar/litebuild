@@ -130,3 +130,18 @@ Solo funciona en mundos de un jugador (edita el mundo del servidor integrado). U
 
 - **Builder Mode**: Marker Entities y Display Entities no aplican en 1.12 (son de 1.17 y 1.19.4 en adelante) y Show Light Blocks tampoco (los light blocks no existen en 1.12); el slot 10 de la hotbar no existe (el menú de Builder se abre con una tecla).
 - **No aplica por diseño**: multijugador, Commercial License, configuración HOCON y los comandos `/axiom...`.
+
+## Origen y licencias
+
+**Independiente de Axiom.** LitBuild es una reimplementación propia: no contiene código, recursos ni texturas de Axiom, no se ha decompilado ni examinado su `.jar` (el EULA de Axiom prohíbe la ingeniería inversa y las obras derivadas de su software, §3.3 y §5.3) y no tiene relación con su autor. Las funciones se han escrito a partir de la documentación pública de Axiom (<https://axiomdocs.moulberry.com/>); las ideas y el comportamiento no están protegidos, el código sí, y todo el código de este proyecto es propio. «Axiom» se nombra solo para decir de qué se inspira.
+
+**Uso.** El proyecto es interno y no se distribuye. Antes de publicarlo o compartirlo: quitar o reescribir la carpeta `docs/` (son resúmenes y traducciones de la documentación de Axiom, que tiene sus propios derechos de autor), revisar el nombre y los textos de la interfaz y añadir los avisos de licencia de lo que va empaquetado en el `.jar`.
+
+**Lo que va dentro del `.jar`** (copiado por el plugin de Gradle, ver `build.gradle`):
+
+| Componente | Licencia |
+|---|---|
+| [imgui-java](https://github.com/SpaiR/imgui-java) (binding y librerías nativas) sobre [Dear ImGui](https://github.com/ocornut/imgui) | MIT |
+| [LuaJ](https://luaj.sourceforge.net/) (intérprete de Lua del Script Brush y las máscaras Lua) | MIT |
+
+**Lo que no va dentro:** Minecraft 1.12.2 (Mojang), LiteLoader y su Mixin (se instalan aparte; cada uno con su licencia, que aquí no se ha comprobado) y, solo para los tests, JUnit 4 (EPL-1.0) y Hamcrest (BSD). El proyecto se compila con los nombres de MCP (`snapshot_20170919`) y se reofusca al final.

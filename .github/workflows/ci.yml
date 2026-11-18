@@ -1,0 +1,55 @@
+name: CI
+
+# Compila el mod (con ForgeGradle 2.3 y Java 8), ejecuta los tests de JUnit y guarda el .litemod como artefacto.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      # ForgeGradle descarga y decompila Minecraft: la caché ahorra varios minutos por ejecución.
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('build.gradle', 'settings.gradle', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Compilar y ejecutar los tests
+        run: ./gradlew build --stacktrace
+
+      - name: Informe de tests
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-de-tests
+          path: build/reports/tests/test
+          if-no-files-found: ignore
+
+      - name: Mod compilado
+        uses: actions/upload-artifact@v4
+        with:
+          name: litbuild-litemod
+          path: build/libs/mod-litbuild-*-mc1.12.2.litemod
+          if-no-files-found: error

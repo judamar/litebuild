@@ -1,0 +1,27 @@
+name: Recompilar desde cero
+
+# La cadena de herramientas es de 2017 (ForgeGradle 2.3, Gradle 4.9) y depende de repositorios externos
+# (maven.minecraftforge.net, repo.spongepowered.org, los de Mojang). Una vez a la semana se compila sin caché
+# para enterarse pronto si alguno desaparece o cambia.
+on:
+  schedule:
+    - cron: '17 5 * * 1'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - name: Compilar y ejecutar los tests (sin caché)
+        run: ./gradlew build --stacktrace
