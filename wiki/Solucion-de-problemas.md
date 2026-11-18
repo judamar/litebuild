@@ -5,7 +5,7 @@
 `.minecraft/logs/latest.log` (y `crash-reports/` si el juego se cerró de golpe). Debe contener, al arrancar:
 
 ```
-Successfully added mod LiteBuild version 1.0.0-rc1
+Successfully added mod LiteBuild version 1.0.0
 LiteBuild cargado
 imgui-java: librería nativa cargada
 ```
@@ -29,7 +29,7 @@ Si el juego se cierra de golpe, busca en el log:
 - `Dear ImGui Assertion Failed` + `Assertion Located At`: es un error de la interfaz. Anota la ventana que salía en `In window '...'` y la línea del `StackTrace` con `dev.litebuild`.
 - `java.lang.NoClassDefFoundError` / `MixinApplyError`: un mixin no pudo aplicarse. Pasa si hay otro mod que modifica las mismas clases.
 
-> En 1.0.0-rc1 está corregido un cierre que ocurría al **activar una capability** del menú de Builder (por ejemplo Tinker). Si te pasa en una versión anterior, actualiza.
+> Desde la 0.31.2 (y en la 1.0.0) está corregido un cierre que ocurría al **activar una capability** del menú de Builder (por ejemplo Tinker). Si te pasa en una versión anterior, actualiza.
 
 **Para reportar un fallo**, incluye: la versión de LiteBuild, qué hacías, qué esperabas, qué pasó, el texto exacto de cualquier mensaje y `latest.log` (y el crash report si lo hay).
 

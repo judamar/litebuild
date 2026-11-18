@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.0.0
+
+Primera versión estable de LiteBuild: editor de mundo y modo de construcción para Minecraft 1.12.2 con LiteLoader, solo cliente (un jugador). Inspirado en Axiom, es una reimplementación propia sin código suyo. No hay cambios de código respecto a la 1.0.0-rc1, que se probó en el juego.
+
+### Qué incluye
+- Editor de mundo con interfaz Dear ImGui (**Right Shift**): 32 herramientas (selección, pinceles de terreno, modelado, fluidos, anotación), Script Brush en Lua, Tool Masks, presets, historial, schematics y blueprints, Placement con gizmo (mover, girar, escalar), vista previa con bloques, Smooth Scale y RotSprite, Autoshade y Animated Rebuild.
+- Menú de Builder (**B**): herramientas Move, Clone, Stack, Smear, Extrude, Erase y Symmetry; capabilities (Tinker, No Updates, Force Place, Replace Mode, Bulldozer, Infinite Reach, Fast Place, Angel Placement, No Clip); hitboxes de fluidos y expandidas, malla de colisión, hotbars, selector de color y Gradient Helper.
+- Interfaz en **español e inglés** (View > Language).
+- **Wiki y tutoriales** en la carpeta `wiki/` y lista completa de funciones en el README.
+
+### Cambios desde la 1.0.0-rc1
+- Repositorio público; el README abre con «Inspirado en Axiom» y los resúmenes de la documentación de Axiom ya no forman parte del repositorio.
+- Versión 1.0.0 (sin sufijo `-rc1`).
+
 ## 1.0.0-rc1
 
 Primera versión candidata a 1.0.0. Minecraft 1.12.2 con LiteLoader, solo cliente (un jugador). Se probó en el juego la 0.31.1 entera (arranque, idiomas, Placement, vista previa, Fluid Ball, máscaras Lua, Smart Surface, menú de Builder y estabilidad del editor); lo único que cambia después es el script por defecto de las reglas Lua y la licencia.

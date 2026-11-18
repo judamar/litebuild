@@ -27,7 +27,7 @@
 Entra en un mundo de un jugador y pulsa **Right Shift**: se abre el editor. Si no:
 
 1. Abre `.minecraft/logs/latest.log` y busca:
-   - `Successfully added mod LiteBuild version 1.0.0-rc1`
+   - `Successfully added mod LiteBuild version 1.0.0`
    - `LiteBuild cargado`
    - `imgui-java: librería nativa cargada`
 2. En *Opciones > Controles* debe haber una categoría **LiteBuild** con *Open editor* (Right Shift), *Toggle No Clip*, *Builder menu* (B) y una tecla por cada capability.

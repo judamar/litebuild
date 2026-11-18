@@ -2,7 +2,7 @@
 
 **LiteBuild** es un mod de **cliente** para **Minecraft 1.12.2** con **LiteLoader** que añade un editor de mundo con interfaz gráfica (Dear ImGui) y un modo de construcción para usar en el propio juego. Está inspirado en la funcionalidad de Axiom, pero es una reimplementación propia: no contiene código ni recursos de Axiom y no está relacionado con su autor.
 
-> Funciona solo en **mundos de un jugador** (edita el mundo del servidor integrado). Versión de esta wiki: **1.0.0-rc1**.
+> Funciona solo en **mundos de un jugador** (edita el mundo del servidor integrado). Versión de esta wiki: **1.0.0**.
 
 ## Por dónde empezar
 
