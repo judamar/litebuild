@@ -1660,7 +1660,7 @@ public class EditorScreen extends GuiScreen {
                 : "Mantén el botón derecho: una esfera de fuentes que reemplaza aire y bloques no sólidos; el fluido fluye solo, como en vanilla. Ctrl+Z quita las fuentes y el flujo se retira.");
     }
 
-    /** Ventana con los textos de las anotaciones: editarlos, ir hasta ellos o borrarlos. */
+    /** Codifica un texto (por ejemplo código Lua) para guardarlo en una sola línea de un preset. */
     private static String encode(String s) {
         try {
             return java.net.URLEncoder.encode(s, "UTF-8");
@@ -1669,6 +1669,7 @@ public class EditorScreen extends GuiScreen {
         }
     }
 
+    /** Lo contrario de {@link #encode}; vacío si el texto no es válido. */
     private static String decode(String s) {
         try {
             return java.net.URLDecoder.decode(s, "UTF-8");
@@ -1976,6 +1977,7 @@ public class EditorScreen extends GuiScreen {
         ImGui.end();
     }
 
+    /** Ventana con los textos de las anotaciones: editarlos, ir hasta ellos o borrarlos. */
     private void textAnnotationsWindow() {
         Annotations.ensureLoaded();
         if (ImGui.begin("Text Annotations", showTextAnn)) {

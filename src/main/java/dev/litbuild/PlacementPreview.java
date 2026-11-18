@@ -46,6 +46,10 @@ public final class PlacementPreview {
         if (failed || shape == null || !Placement.PREVIEW.get()) {
             return false;
         }
+        if (shape != built && BoxGizmo.dragging) {
+            return false; // mientras se arrastra un anillo o un cubito la forma cambia a cada paso: solo la caja, y se renderiza al soltar
+        }
+        boolean pushed = false;
         try {
             if (shape != built) {
                 rebuild(shape);
@@ -54,6 +58,7 @@ public final class PlacementPreview {
                 return false;
             }
             GL11.glPushAttrib(GL11.GL_ALL_ATTRIB_BITS);
+            pushed = true;
             Minecraft.getMinecraft().getTextureManager().bindTexture(TextureMap.LOCATION_BLOCKS_TEXTURE);
             GL13.glActiveTexture(GL13.GL_TEXTURE0);
             GL11.glEnable(GL11.GL_TEXTURE_2D);
@@ -66,12 +71,19 @@ public final class PlacementPreview {
             GL11.glDepthMask(true);
             GL11.glColor4f(1f, 1f, 1f, 1f);
             GL11.glPushMatrix();
-            GL11.glTranslated(x, y, z);
-            GL11.glCallList(list);
-            GL11.glPopMatrix();
+            try {
+                GL11.glTranslated(x, y, z);
+                GL11.glCallList(list);
+            } finally {
+                GL11.glPopMatrix();
+            }
             GL11.glPopAttrib();
+            pushed = false;
             return true;
         } catch (Throwable t) {
+            if (pushed) {
+                GL11.glPopAttrib();
+            }
             failed = true;
             release();
             LiteModLitBuild.LOG.error("Vista previa del Placement desactivada", t);
@@ -164,7 +176,10 @@ public final class PlacementPreview {
         buffer.finishDrawing();
         list = GL11.glGenLists(1);
         GL11.glNewList(list, GL11.GL_COMPILE);
-        new WorldVertexBufferUploader().draw(buffer);
-        GL11.glEndList();
+        try {
+            new WorldVertexBufferUploader().draw(buffer);
+        } finally {
+            GL11.glEndList();
+        }
     }
 }

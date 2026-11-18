@@ -77,7 +77,7 @@ public final class BlockHighlights {
 
     /** Bloques cuya hitbox no se distingue bien del aire o del modelo: barreras y los que se conectan por brazos finos. */
     private static boolean hasInvisibleHitbox(Block b) {
-        return b == Blocks.BARRIER || b instanceof BlockBarrier || b instanceof BlockFence || b instanceof BlockFenceGate
-                || b instanceof BlockWall || b instanceof BlockPane;
+        return b instanceof BlockBarrier || b instanceof BlockFence || b instanceof BlockFenceGate || b instanceof BlockWall
+                || b instanceof BlockPane;
     }
 }

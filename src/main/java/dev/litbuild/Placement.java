@@ -31,6 +31,9 @@ public final class Placement {
     /** Al girar con ángulos libres: RotSprite (ampliar con bordes, girar y reducir) en vez del vecino más cercano. */
     public static final ImBoolean ROTSPRITE = new ImBoolean(false);
 
+    /** Lo que sobra de redondear el centro a bloques al recolocar tras girar o escalar, para no acumular error. */
+    private static double residualX, residualZ;
+
     private Placement() {
     }
 
@@ -59,6 +62,7 @@ public final class Placement {
     }
 
     public static void resetTransform() {
+        residualX = residualZ = 0;
         angles[0] = angles[1] = angles[2] = 0f;
         scale[0] = scale[1] = scale[2] = 1f;
     }
@@ -84,8 +88,9 @@ public final class Placement {
         boolean identity = angles[0] == 0f && angles[1] == 0f && angles[2] == 0f
                 && scale[0] == 1f && scale[1] == 1f && scale[2] == 1f;
         boolean turned = angles[0] != 0f || angles[1] != 0f || angles[2] != 0f;
+        // RotSprite es pesado: mientras se arrastra un anillo o un cubito se gira sin él y se aplica al soltar.
         Clipboard n = identity ? original
-                : ROTSPRITE.get() && turned
+                : ROTSPRITE.get() && turned && !BoxGizmo.dragging
                         ? original.rotSprite(angles[0], angles[1], angles[2], scale[0], scale[1], scale[2])
                         : original.transformed(angles[0], angles[1], angles[2], scale[0], scale[1], scale[2]);
         if (n == null) {
@@ -94,8 +99,12 @@ public final class Placement {
         Clipboard old = shape;
         shape = n;
         if (!follow && old != null) {
-            pos[0] += (old.sx - n.sx) / 2;
-            pos[2] += (old.sz - n.sz) / 2;
+            double dx = residualX + (old.sx - n.sx) / 2.0, dz = residualZ + (old.sz - n.sz) / 2.0;
+            int mx = (int) Math.round(dx), mz = (int) Math.round(dz);
+            pos[0] += mx;
+            pos[2] += mz;
+            residualX = dx - mx;
+            residualZ = dz - mz;
         }
         return true;
     }

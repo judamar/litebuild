@@ -48,7 +48,9 @@ public final class MaskSpec {
 
     public boolean test(World w, int x, int y, int z) {
         for (int i = 0; i < type.length; i++) {
-            if (eval(i, w, x, y, z) == not[i]) {
+            boolean e = eval(i, w, x, y, z);
+            // Una regla Lua que falla no deja pasar nada, tampoco con NOT.
+            if (type[i] == LUA && luaFailed != null && luaFailed[i] || e == not[i]) {
                 return false;
             }
         }
@@ -114,7 +116,7 @@ public final class MaskSpec {
                 runners[i] = new ScriptRunner(w, lua[i]);
             }
             return runners[i].test(x, y, z);
-        } catch (org.luaj.vm2.LuaError e) {
+        } catch (RuntimeException e) {
             luaFailed[i] = true;
             EditEngine.status = "Tool Masks (Lua), regla " + (i + 1) + ": " + e.getMessage();
             return false;

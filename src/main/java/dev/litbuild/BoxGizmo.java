@@ -45,10 +45,11 @@ public final class BoxGizmo {
     private static final double[] planeOrigin = new double[3], planeNormal = new double[3];
     private static final double[][] dragFrame = new double[3][3];
     private static final double[] startPoint = new double[3];
-    private static double ringStartAngle, ringStartValue;
+    private static double ringStartAngle;
     private static boolean ringLocal;
     private static double[][] ringStartMatrix;
-    private static final float[] ringStartAngles = new float[3];
+    /** El centro de la copia al empezar el arrastre: girar y escalar lo recolocan desde aquí, sin acumular redondeos. */
+    private static final double[] dragCentre = new double[3];
     private static double scaleExtent;
     private static final float[] scaleStart = new float[3];
     /** Dirección en el mundo (con signo) del eje que se arrastra. */
@@ -229,6 +230,11 @@ public final class BoxGizmo {
             startXyz[k] = Placement.pos[k];
             System.arraycopy(frame[k], 0, dragFrame[k], 0, 3);
         }
+        if (Placement.shape != null) {
+            dragCentre[0] = Placement.pos[0] + Placement.shape.sx / 2.0;
+            dragCentre[1] = Placement.pos[1] + Placement.shape.sy / 2.0;
+            dragCentre[2] = Placement.pos[2] + Placement.shape.sz / 2.0;
+        }
         if (f == CENTER) {
             // Nodo central: el Placement sigue al cursor manteniendo la distancia a la cámara.
             mode = M_CENTER;
@@ -346,11 +352,6 @@ public final class BoxGizmo {
         return ringAngle(a, dot(r, dragFrame[0]), dot(r, dragFrame[1]), dot(r, dragFrame[2]));
     }
 
-    /** Índice en Placement.angles (yaw, pitch, roll) del giro alrededor del eje a. */
-    private static int angleIndex(int a) {
-        return a == 0 ? 1 : a == 1 ? 0 : 2;
-    }
-
     private static void beginRing(int a, float mx, float my) {
         axis = a;
         setPlane(mid, dragFrame[a]);
@@ -359,10 +360,8 @@ public final class BoxGizmo {
             return;
         }
         ringStartAngle = angleOf(a, p);
-        ringStartValue = Placement.angles[angleIndex(a)];
         ringLocal = Placement.LOCAL.get();
         ringStartMatrix = Euler.matrix(Placement.angles[0], Placement.angles[1], Placement.angles[2]);
-        System.arraycopy(Placement.angles, 0, ringStartAngles, 0, 3);
         Placement.follow = false;
         mode = M_RING;
         active = RING + a;
@@ -374,14 +373,16 @@ public final class BoxGizmo {
         return d > 180 ? d - 360 : d <= -180 ? d + 360 : d;
     }
 
-    /** Refresca el Placement tras cambiar giro o escala manteniendo también el centro vertical; false si no cabe. */
+    /** Refresca el Placement tras cambiar giro o escala dejando el centro donde estaba al empezar el arrastre; false si no cabe. */
     private static boolean refreshKeepingCentre() {
-        Clipboard old = Placement.shape;
         if (!Placement.refresh()) {
             return false;
         }
-        if (old != null && Placement.shape != null) {
-            Placement.pos[1] = Math.max(0, Math.min(255, Placement.pos[1] + (old.sy - Placement.shape.sy) / 2));
+        Clipboard n = Placement.shape;
+        if (n != null) {
+            Placement.pos[0] = (int) Math.round(dragCentre[0] - n.sx / 2.0);
+            Placement.pos[1] = Math.max(0, Math.min(255, (int) Math.round(dragCentre[1] - n.sy / 2.0)));
+            Placement.pos[2] = (int) Math.round(dragCentre[2] - n.sz / 2.0);
         }
         return true;
     }
@@ -454,8 +455,8 @@ public final class BoxGizmo {
     }
 
     /**
-     * Gira con el anillo. En Global solo cambia el ángulo de ese eje (yaw, pitch o roll); en Local el giro se compone con
-     * el de partida alrededor del eje propio de la copia y se vuelve a pasar a yaw, pitch y roll.
+     * Gira con el anillo. El giro se compone con el de partida: en Global alrededor de un eje del mundo (R' = giro * R) y
+     * en Local alrededor de un eje propio de la copia (R' = R * giro), y se vuelve a pasar a yaw, pitch y roll.
      */
     private static void ringDrag(float mx, float my) {
         double[] p = planePoint(mx, my);
@@ -465,15 +466,11 @@ public final class BoxGizmo {
         double delta = wrap180(Math.toDegrees(angleOf(axis, p) - ringStartAngle));
         float[] before = {Placement.angles[0], Placement.angles[1], Placement.angles[2]};
         int snap = ImGui.getIO().getKeyCtrl() ? 15 : 1;
-        if (ringLocal) {
-            double d = Math.round(delta / snap) * (double) snap;
-            double[][] turn = axis == 0 ? Euler.rx(d) : axis == 1 ? Euler.ry(d) : Euler.rz(d);
-            double[] a = Euler.angles(Euler.mul(ringStartMatrix, turn));
-            for (int k = 0; k < 3; k++) {
-                Placement.angles[k] = (float) a[k];
-            }
-        } else {
-            Placement.angles[angleIndex(axis)] = (float) wrap180(Math.round((ringStartValue + delta) / snap) * (double) snap);
+        double d = Math.round(delta / snap) * (double) snap;
+        double[][] turn = axis == 0 ? Euler.rx(d) : axis == 1 ? Euler.ry(d) : Euler.rz(d);
+        double[] a = Euler.angles(ringLocal ? Euler.mul(ringStartMatrix, turn) : Euler.mul(turn, ringStartMatrix));
+        for (int k = 0; k < 3; k++) {
+            Placement.angles[k] = (float) a[k];
         }
         if (before[0] == Placement.angles[0] && before[1] == Placement.angles[1] && before[2] == Placement.angles[2]) {
             return;
@@ -484,8 +481,12 @@ public final class BoxGizmo {
     }
 
     public static void end() {
+        boolean redo = mode == M_RING || mode == M_SCALE;
         dragging = false;
         mode = M_ARROW;
         active = -1;
+        if (redo && Placement.active && Placement.ROTSPRITE.get()) {
+            refreshKeepingCentre(); // durante el arrastre RotSprite se salta (es pesado): se aplica una vez al soltar
+        }
     }
 }

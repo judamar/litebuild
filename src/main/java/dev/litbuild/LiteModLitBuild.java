@@ -35,7 +35,7 @@ public class LiteModLitBuild implements LiteMod, Tickable, ShutdownListener, Pos
 
     @Override
     public String getVersion() {
-        return "0.30.0";
+        return "0.30.1";
     }
 
     @Override

@@ -13,7 +13,7 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.liteloader'
 
-version = '0.30.0'
+version = '0.30.1'
 group = 'dev.litbuild'
 archivesBaseName = 'litbuild'
 sourceCompatibility = targetCompatibility = '1.8'
@@ -56,6 +56,7 @@ dependencies {
     shade "io.github.spair:imgui-java-natives-linux:${imguiVersion}"
     shade "io.github.spair:imgui-java-natives-windows:${imguiVersion}"
     shade "org.luaj:luaj-jse:3.0.1"   // Script Brush: intérprete de Lua en Java puro (MIT)
+    testCompile 'junit:junit:4.13.2'  // pruebas de las clases puras (sin Minecraft): ./gradlew test
 }
 
 jar {

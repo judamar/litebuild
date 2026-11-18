@@ -101,14 +101,17 @@ public final class FluidFlow {
                 costs.add(Math.sqrt(5));
             }
         }
-        while (!queue.isEmpty() && dist.size() < MAX_CELLS) {
+        // El tope cuenta solo lo que se extiende: una bola grande de fuentes no puede dejar sin flujo a todo lo demás.
+        int cap = MAX_CELLS + src.size();
+        while (!queue.isEmpty() && dist.size() < cap) {
             double[] t = queue.poll();
             int x = (int) t[1], y = (int) t[2], z = (int) t[3];
             double d = t[0];
             if (d > dist.get(key(x, y, z)) + 1e-9) {
                 continue;
             }
-            boolean below = y > 0 && !probe.solid(x, y - 1, z);
+            // Una fuente de la propia bola debajo cuenta como apoyo (el agua no cae sobre agua): sobre ella también se extiende.
+            boolean below = y > 0 && !probe.solid(x, y - 1, z) && !src.contains(key(x, y - 1, z));
             if (below && !needSupport) {
                 long k = key(x, y - 1, z);
                 if (!dist.containsKey(k)) {
