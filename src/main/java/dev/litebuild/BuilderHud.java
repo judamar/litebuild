@@ -22,7 +22,7 @@ public final class BuilderHud {
         List<String> lines = BuilderTools.hud();
         int y = h - 64 - lines.size() * 11;
         for (int i = 0; i < lines.size(); i++) {
-            String s = lines.get(i);
+            String s = I18n.tr(lines.get(i));
             font.drawStringWithShadow(s, (w - font.getStringWidth(s)) / 2f, y + i * 11, i == 0 ? 0x66FF88 : 0xAAAAAA);
         }
         // Capabilities activas, arriba a la izquierda

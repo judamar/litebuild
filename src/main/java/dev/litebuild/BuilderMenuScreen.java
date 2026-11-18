@@ -10,6 +10,7 @@ import imgui.ImGui;
 import imgui.flag.ImGuiCol;
 import imgui.flag.ImGuiCond;
 import imgui.type.ImBoolean;
+import imgui.type.ImInt;
 import imgui.type.ImString;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.gui.GuiScreen;
@@ -209,6 +210,12 @@ public class BuilderMenuScreen extends GuiScreen {
             UiSettings.save();
         }
         ImGui.checkbox("Show key hints", BuilderMode.showKeys);
+        ImInt language = new ImInt(UiSettings.language);
+        if (ImGui.combo("Language", language, I18n.LANGUAGES)) {
+            I18n.set(language.get());
+            UiSettings.language = language.get();
+            UiSettings.save();
+        }
         ImGui.separatorText("Edit Block Attributes");
         ImGui.checkbox("Show structure void blocks", BuilderMode.showStructureVoid);
         ImGui.checkbox("Show collision mesh", BuilderMode.showCollision);

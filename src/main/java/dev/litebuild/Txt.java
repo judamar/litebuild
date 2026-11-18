@@ -11,8 +11,9 @@ public final class Txt {
     private Txt() {
     }
 
+    /** Traduce al idioma elegido ({@link I18n}) y escapa los "%". */
     private static String esc(String s) {
-        return s.replace("%", "%%");
+        return I18n.tr(s).replace("%", "%%");
     }
 
     public static void text(String s) {

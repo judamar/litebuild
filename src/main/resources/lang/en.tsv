@@ -1,0 +1,280 @@
+# Catálogo es -> en de LiteBuild. Formato: texto en español<TAB>texto en inglés. {0}, {1}... son los huecos de los textos con datos; \n = salto de línea.
+Annotation: solo se anotan los primeros {0} bloques	Annotation: only the first {0} blocks are annotated
+Annotation: todas las anotaciones borradas	Annotation: all annotations cleared
+Elegir bloque	Choose block
+Ningún bloque coincide.	No block matches.
+Alt + rueda también cambia de herramienta. Izquierdo/derecho: esquinas; rueda: empujar; central: llevar al bloque; derecho: confirmar.	Alt + wheel also switches tools. Left/right: corners; wheel: push; middle: move to block; right: confirm.
+Replace Mode con un bloque de otro material: las escaleras, losas, muros y vallas pasan a ser de ese material.	Replace Mode with a block of another material: stairs, slabs, walls and fences become that material.
+Contorno rojo con la caja de colisión real de barreras, vallas, puertas de valla, muros, paneles de cristal y barras de hierro cercanos.	Red outline with the real collision box of nearby barriers, fences, fence gates, walls, glass panes and iron bars.
+Apuntas al agua y a la lava como a cualquier bloque: se pueden romper con el puño y colocar bloques contra su superficie.	You target water and lava like any other block: they can be broken with a fist and blocks can be placed against their surface.
+Todos los bloques se apuntan como cubos completos (losas, botones, flores, antorchas...); el contorno blanco muestra el cubo. Con Make fluid hitboxes solid también cuentan los fluidos.	All blocks are targeted as full cubes (slabs, buttons, flowers, torches...); the white outline shows the cube. With Make fluid hitboxes solid, fluids count too.
+Con un bloque en la mano, el clic derecho sobre un cofre, puerta o similar coloca el bloque en vez de abrirlo.	With a block in hand, right-clicking a chest, door or similar places the block instead of opening it.
+Sin hotbars guardadas. Rellena la hotbar y guárdala aquí; valen para todos los mundos.	No saved hotbars. Fill the hotbar and save it here; they work in every world.
+{0} activado	{0} enabled
+{0} desactivado	{0} disabled
+Type Replace: no hay equivalente de ese material	Type Replace: no equivalent for that material
+Derecho: extruir cara · Izquierdo: encoger	Right: extrude face · Left: shrink
+Derecho: nodo · Ctrl+F voltear · Ctrl+R rotar · Supr: quitar	Right: node · Ctrl+F flip · Ctrl+R rotate · Del: remove
+Derecho: borrar 128 conectados · Izq + Der: cuboide, Supr	Right: erase 128 connected · Left + Right: cuboid, Del
+Supr / Derecho: borrar	Del / Right: erase
+Izquierdo: 1ª esquina	Left: 1st corner
+Derecho: 2ª esquina	Right: 2nd corner
+Rueda: empujar · Central: llevar al bloque · Derecho: confirmar	Wheel: push · Middle: move to block · Right: confirm
+Clic en un bloque: {0}	Click a block: {0}
+Hacen falta al menos 2 bloques de entrada con color.	At least 2 input blocks with a colour are needed.
+< > elige la mejor coincidencia anterior o siguiente de cada casilla.	< > picks the previous or next best match for each slot.
+{0}: nada que cambiar ({1} fuera de chunks cargados)	{0}: nothing to change ({1} outside loaded chunks)
+{0}: {1} bloques ({2} omitidos: chunk sin cargar)	{0}: {1} blocks ({2} skipped: chunk not loaded)
+{0}: {1} bloques	{0}: {1} blocks
+Solo disponible en mundos de un jugador	Only available in singleplayer worlds
+No hay selección	No selection
+Selección demasiado grande: {0} bloques (máximo {1})	Selection too large: {0} blocks (maximum {1})
+La caja de la selección es demasiado grande: {0} bloques (máximo {1})	The selection box is too large: {0} blocks (maximum {1})
+Analyze: {0} bloques	Analyze: {0} blocks
+Copiado: {0} x {1} x {2} ({3} bloques, {4} entidades)	Copied: {0} x {1} x {2} ({3} blocks, {4} entities)
+Copiado: {0} x {1} x {2} ({3} bloques)	Copied: {0} x {1} x {2} ({3} blocks)
+Smear demasiado grande: {0} bloques (máximo {1})	Smear too large: {0} blocks (maximum {1})
+Stack demasiado grande: {0} bloques (máximo {1})	Stack too large: {0} blocks (maximum {1})
+Floodfill: el punto de partida no es un hueco	Floodfill: the starting point is not a gap
+{0}: demasiados bloques ({1}, máximo {2})	{0}: too many blocks ({1}, maximum {2})
+Simulate Gravity: solo funciona con selecciones en caja	Simulate Gravity: only works with box selections
+Fill Gaps: solo funciona con selecciones en caja	Fill Gaps: only works with box selections
+Extrude: ese bloque no cuenta con la comparación elegida	Extrude: that block does not count with the chosen comparison
+Extrude: esa cara no está libre	Extrude: that face is not free
+Fill Nearest: la selección solo tiene aire	Fill Nearest: the selection only contains air
+Smoothsnow: área demasiado grande	Smoothsnow: area too large
+Colour Field: aún no hay colores de bloques (abre el editor y vuelve a probar)	Colour Field: block colours are not available yet (open the editor and try again)
+Animated Rebuild: ya hay una en curso (Cancel o Undo)	Animated Rebuild: one is already running (Cancel or Undo)
+Animated Rebuild: no hay nada que reconstruir	Animated Rebuild: nothing to rebuild
+Animated Rebuild: la selección solo tiene aire	Animated Rebuild: the selection only contains air
+Animated Rebuild: {0} bloques, unos {1} s	Animated Rebuild: {0} blocks, about {1} s
+Autoshade: hace falta una paleta de al menos 2 bloques (o 2 tipos distintos en la selección)	Autoshade: a palette of at least 2 blocks is needed (or 2 different types in the selection)
+Exportado: {0} ({1} bloques)	Exported: {0} ({1} blocks)
+No se pudo exportar: {0}	Could not export: {0}
+Modify: no hay bloques que colocar	Modify: no blocks to place
+Deshechas {0} ediciones	Undid {0} edits
+Rehechas {0} ediciones	Redid {0} edits
+Gradient Painter: {0} bloques del Gradient Helper	Gradient Painter: {0} blocks from the Gradient Helper
+Editor de mundo para Minecraft 1.12.2 con LiteLoader, hecho desde cero a partir de la documentación pública de Axiom. Solo cliente: edita el mundo del servidor integrado (un jugador).	World editor for Minecraft 1.12.2 with LiteLoader, written from scratch from Axiom's public documentation. Client only: it edits the integrated server's world (singleplayer).
+Builder Mode: tecla B o tocar Alt (Menú de Builder), Alt + rueda para elegir herramienta. Editor: Right Shift.	Builder Mode: press B or tap Alt (Builder menu), Alt + wheel to pick a tool. Editor: Right Shift.
+Tema copiado al portapapeles	Theme copied to the clipboard
+El portapapeles no tiene un tema	The clipboard has no theme
+El bloque activo no es válido	The Active Block is not valid
+Layout copiado al portapapeles	Layout copied to the clipboard
+El portapapeles no tiene un layout	The clipboard has no layout
+Solo cambia los bloques que tocan algo no sólido.	Only changes blocks that touch something non-solid.
+Mantén el botón derecho para pintar con el Active Block solo los bloques sólidos.	Hold the right button to paint only solid blocks with the Active Block.
+Mantén el botón derecho para colocar el Active Block en todo el volumen del pincel.	Hold the right button to place the Active Block in the whole brush volume.
+Botón derecho sobre una cara: la superficie de bloques iguales crece hacia fuera. Con Shrink (o Shift) se come capas.	Right button on a face: the surface of identical blocks grows outwards. With Shrink (or Shift) it eats layers.
+Crea la forma con el Active Block como Placement: se coloca como un pegado.	Creates the shape with the Active Block as a Placement: it is placed like a paste.
+Botón derecho sobre un bloque: selecciona los conectados que cumplan la comparación.	Right button on a block: selects the connected blocks that satisfy the comparison.
+Botón derecho: clic en un bloque y arrastra hasta otro. Después arrastra con el botón izquierdo los cubos de color de las caras para estirar o encoger la caja.	Right button: click a block and drag to another. Then drag the coloured cubes on the faces with the left button to stretch or shrink the box.
+Mantén el botón derecho. El script corre por cada bloque del pincel con sus coordenadas x, y, z; si devuelve un id de bloque (blocks.stone...) se coloca ahí. Con $once$ corre una vez por sello.	Hold the right button. The script runs for each brush block with its x, y, z coordinates; if it returns a block id (blocks.stone...) it is placed there. With $once$ it runs once per stamp.
+blocks.nombre (nombre de 1.12, o nombre:meta) · getBlock(x,y,z) · getBlockState(x,y,z) · setBlock(x,y,z,id) · isSolid(id) · getHighestBlockYAt(x,z) · withBlockProperty(id,'prop=valor') · getBlockProperty(id,'prop') · isBlockTagged(id,'logs') · getBlockRGB(id) · findClosestBlockToRGB(rgb,flags,índice) · getSimplexNoise(x,y,z,semilla) · getVoroniEdgeNoise(x,y,z,semilla) · print(...)	blocks.name (a 1.12 name, or name:meta) · getBlock(x,y,z) · getBlockState(x,y,z) · setBlock(x,y,z,id) · isSolid(id) · getHighestBlockYAt(x,z) · withBlockProperty(id,'prop=value') · getBlockProperty(id,'prop') · isBlockTagged(id,'logs') · getBlockRGB(id) · findClosestBlockToRGB(rgb,flags,index) · getSimplexNoise(x,y,z,seed) · getVoroniEdgeNoise(x,y,z,seed) · print(...)
+Variables: $int(Título, valor, mín, máx)$ · $float(...)$ · $boolean(Título, valor)$ · $blockState(Título, minecraft:stone)$ · $once$. Sin io, os ni load; cada sello tiene un presupuesto de instrucciones.	Variables: $int(Title, value, min, max)$ · $float(...)$ · $boolean(Title, value)$ · $blockState(Title, minecraft:stone)$ · $once$. No io, os or load; each stamp has an instruction budget.
+Mantén el botón derecho: deja el terreno dentado (lo contrario de Smooth) conservando el número de bloques.	Hold the right button: roughens the terrain (the opposite of Smooth) keeping the number of blocks.
+Mantén el botón derecho: abre grietas de tipo Voronoi en los bloques sólidos (o las rellena con el Active Block). Scale es la distancia típica entre grietas y Width su grosor; con Scale pequeña y Width grande se rompe casi todo.	Hold the right button: opens Voronoi-style cracks in solid blocks (or fills them with the Active Block). Scale is the typical distance between cracks and Width their thickness; with a small Scale and a large Width almost everything breaks.
+Botón derecho: coloca una roca irregular con el Active Block, medio hundida en el terreno.	Right button: places an irregular rock with the Active Block, half sunk into the terrain.
+Botón derecho sobre una cara: rellena con el Active Block el hueco conectado (aire, agua, plantas...) avanzando en las direcciones marcadas.	Right button on a face: fills the connected gap (air, water, plants...) with the Active Block, advancing in the marked directions.
+Botón derecho: añade un nodo. Line une los nodos con rectas, Catmull-Rom con una curva que pasa por todos y Bezier con una curva que solo toca el primero y el último. Apply la coloca con el Active Block.	Right button: adds a node. Line joins the nodes with straight segments, Catmull-Rom with a curve through all of them and Bezier with a curve that only touches the first and last. Apply places it with the Active Block.
+Mantén el botón derecho y arrastra: sube, baja o aplana el terreno por columnas. El efecto es máximo en el centro y se acumula mientras te mueves. Con un heightmap, el brillo de la imagen fija cuánto cambia cada punto del pincel.	Hold the right button and drag: raises, lowers or flattens the terrain by columns. The effect is strongest at the centre and accumulates as you move. With a heightmap, the image brightness sets how much each brush point changes.
+No se pudo cargar: {0}	Could not load: {0}
+Mantén el botón derecho: deforma el terreno con ruido. Scale es el tamaño de las ondulaciones y Distance cuánto desplaza.	Hold the right button: warps the terrain with noise. Scale is the size of the undulations and Distance how far it shifts.
+Escribe el texto con el Active Block. De pie se lee desde el sur (Ctrl+R lo gira); con Flat queda tumbado, legible desde arriba.	Writes the text with the Active Block. Standing, it reads from the south (Ctrl+R rotates it); with Flat it lies down, readable from above.
+Botón derecho sobre el mundo para colocar el nodo: queda en el punto exacto que apuntas (cara, arista o vértice).	Right button on the world to place the node: it lands on the exact point you aim at (face, edge or vertex).
+Los pinceles se aplican también en las posiciones reflejadas o giradas alrededor del nodo.	Brushes are also applied at the mirrored or rotated positions around the node.
+Weld rellena con el Active Block las zonas cóncavas.	Weld fills concave areas with the Active Block.
+Melt quita masa en las puntas y los salientes.	Melt removes mass at tips and protrusions.
+Smooth reparte los bloques del pincel y conserva su número con Block ratio 100 %.	Smooth redistributes the brush blocks and keeps their number with Block ratio 100 %.
+Mantén el botón derecho. Radio máximo {0}.	Hold the right button. Maximum radius {0}.
+Botón derecho: añade un punto en el bloque bajo el cursor.	Right button: adds a point at the block under the cursor.
+Mantén el botón derecho: reparte los bloques por ruido según su peso.	Hold the right button: distributes the blocks by noise according to their weight.
+Solo pinta dentro de la longitud del degradado.	Only paints within the gradient length.
+Ctrl + botón derecho sobre un bloque fija el origen.	Ctrl + right button on a block sets the origin.
+Mantén el botón derecho: pinta los bloques sólidos repartiendo la lista a lo largo de la dirección (o desde el origen, en Spherical). El peso es el tamaño de cada banda.	Hold the right button: paints solid blocks spreading the list along the direction (or from the origin, in Spherical). The weight is the size of each band.
+Con Relative el desplazamiento se multiplica por el tamaño de la selección en cada eje.	With Relative the offset is multiplied by the selection size on each axis.
+Modify: no hay selección	Modify: no selection
+Ctrl + botón derecho sobre un bloque fija el pivote. Los bloques con orientación solo giran en cuartos de vuelta y con el eje Y; no se copian los tile entities.	Ctrl + right button on a block sets the pivot. Oriented blocks only rotate in quarter turns and around the Y axis; tile entities are not copied.
+Pinta de colores los biomas del terreno de alrededor mientras esta herramienta está activa (View > Show Biomes lo deja siempre).	Colours the biomes of the surrounding terrain while this tool is active (View > Show Biomes keeps it on).
+Mantén el botón derecho: pinta el bioma en columnas enteras (en 1.12 el bioma es por columna, no por bloque), así que cambia el color de la hierba, las hojas y el agua. Se deshace con Ctrl+Z.	Hold the right button: paints the biome on whole columns (in 1.12 the biome is per column, not per block), so it changes the colour of grass, leaves and water. Undo with Ctrl+Z.
+Mantén el botón derecho y arrastra sobre el terreno: dibuja una línea pegada a la superficie.	Hold the right button and drag over the terrain: draws a line stuck to the surface.
+Mantén el botón derecho y pasa por encima de los bloques: se resaltan (hasta 5000).	Hold the right button and sweep over the blocks: they get highlighted (up to 5000).
+Botón derecho entre dos bloques: se resaltan todos los que no son aire de la caja (hasta 5000).	Right button between two blocks: highlights every non-air block in the box (up to 5000).
+Botón derecho sobre un bloque: deja el texto flotando. Los textos solo se ven con el editor abierto; se editan en Window > Text Annotations.	Right button on a block: leaves the text floating. Texts are only visible with the editor open; edit them in Window > Text Annotations.
+Botón derecho sobre una superficie: pega la imagen (URL http/https o ruta de archivo) de cara a ella. Si no carga, se ve una textura rosa y negra.	Right button on a surface: pastes the image (http/https URL or file path) facing it. If it fails to load, a pink and black texture shows.
+Mantén el botón derecho cerca de un texto o una imagen (a menos de 4 bloques) y arrastra: lo lleva a otra superficie. Ctrl+Z lo devuelve.	Hold the right button near a text or an image (within 4 blocks) and drag: it moves to another surface. Ctrl+Z puts it back.
+Mantén el botón derecho: borra las anotaciones que queden dentro del radio. Ctrl+Z las devuelve.	Hold the right button: deletes the annotations within the radius. Ctrl+Z brings them back.
+No se puede deshacer.	This cannot be undone.
+{0} anotaciones en este mundo	{0} annotations in this world
+Coloca el punto en el bloque contiguo a la cara que apuntas, no dentro del bloque apuntado.	Places the point in the block next to the face you aim at, not inside the targeted block.
+{0} puntos en {1} filas (fila actual: {2})	{0} points in {1} rows (current row: {2})
+Botón derecho: añade un punto a la fila actual. Loft une filas contiguas punto a punto (con Flat, Catmull-Rom o Bezier; Smart Surface ignora las filas y triangula todos los puntos según su altura); Triangle Strip y Fan usan todos los puntos en orden; Convex Hull cubre el casco convexo. E duplica el último punto (luego se edita en Points).	Right button: adds a point to the current row. Loft joins adjacent rows point to point (with Flat, Catmull-Rom or Bezier; Smart Surface ignores the rows and triangulates all the points by height); Triangle Strip and Fan use all the points in order; Convex Hull covers the convex hull. E duplicates the last point (then edit it in Points).
+Escribe una URL (http/https) o la ruta de un archivo de imagen y pulsa Load. Clic derecho: opciones.	Type a URL (http/https) or the path of an image file and press Load. Right click: options.
+Cuántos bloques se extiende el fluido en horizontal desde las fuentes; cae por los huecos. 0 = solo las fuentes. La lava llega a la mitad.	How many blocks the fluid spreads horizontally from the sources; it falls through gaps. 0 = sources only. Lava reaches half as far.
+La región inicial es toda de fuentes. Desactivado, es una sola fuente en el centro.	The initial region is all sources. When off, it is a single source at the centre.
+Solo fluye sobre bloques sólidos: sin cascadas.	Only flows over solid blocks: no waterfalls.
+Quita el agua o lava que fluye (sin fuente) alrededor antes de colocar la nueva.	Removes the flowing water or lava (without a source) around before placing the new one.
+Rellena las esquinas sueltas de la orilla y, si el fluido llena un recipiente cerrado, lo deja plano (todo fuentes).	Fills loose corners along the shore and, if the fluid fills a closed container, leaves it flat (all sources).
+1 = el rombo de vanilla; 2 añade las diagonales y 3 los saltos de caballo: la mancha sale más redonda. Más de 3 no cambia nada. El juego sigue simulando el fluido después de colocarlo y puede retocar los niveles.	1 = the vanilla diamond; 2 adds the diagonals and 3 the knight moves: the pool comes out rounder. More than 3 changes nothing. The game keeps simulating the fluid after placing it and may tweak the levels.
+Mantén el botón derecho: capas de nieve sobre la superficie, más gruesas en el centro.	Hold the right button: snow layers on the surface, thicker at the centre.
+Mantén el botón derecho: una esfera de fuentes que reemplaza aire y bloques no sólidos; el fluido fluye solo, como en vanilla. Ctrl+Z quita las fuentes y el flujo se retira.	Hold the right button: a sphere of sources that replaces air and non-solid blocks; the fluid flows by itself, as in vanilla. Ctrl+Z removes the sources and the flow recedes.
+Sin presets guardados para esta herramienta.	No saved presets for this tool.
+Pulsa la nueva tecla para {0} (con Ctrl o Shift si los quieres; Esc cancela)	Press the new key for {0} (with Ctrl or Shift if you want them; Esc cancels)
+Otro atajo usa la misma combinación en este contexto.	Another shortcut uses the same combination in this context.
+Fijos: flechas / RePág / AvPág mueven un Placement (y RePág / AvPág estiran la selección; con Shift la encogen), Backspace también cancela un Placement, clic central copia un bloque, Escape o Right Shift cierran el editor.	Fixed: arrows / PgUp / PgDn move a Placement (and PgUp / PgDn stretch the selection; with Shift they shrink it), Backspace also cancels a Placement, middle click copies a block, Escape or Right Shift closes the editor.
+Sin textos. Usa la herramienta Annotation en modo Text.	No texts. Use the Annotation tool in Text mode.
+Cuántos bloques se adentra la selección en la vista, desde la superficie.	How many blocks deep into the view the selection reaches, from the surface.
+Mantén el botón derecho y dibuja un bucle en pantalla: al soltar, el contorno se proyecta sobre los bloques visibles (hasta Depth).	Hold the right button and draw a loop on screen: on release, the outline is projected onto the visible blocks (up to Depth).
+Mantén el botón derecho: levanta una protuberancia siguiendo la normal de la superficie (Invert la hunde). Mask Y la empuja siempre hacia arriba; Denoise la deja más lisa. No usa el Active Block: copia los bloques vecinos.	Hold the right button: raises a bump following the surface normal (Invert sinks it). Mask Y always pushes it upwards; Denoise makes it smoother. It does not use the Active Block: it copies the neighbouring blocks.
+1) Botón derecho en un bloque: fija el objetivo (la caja magenta). 2) Mantén el botón derecho desde otro bloque y arrastra: el terreno se lleva a la recta inicio-objetivo. Cone es una pendiente radial alrededor del inicio (sube si el objetivo está más alto, baja si está más bajo). Ctrl + clic fija otro objetivo. Height limita el cambio por columna.	1) Right button on a block: sets the target (the magenta box). 2) Hold the right button from another block and drag: the terrain is brought to the start-target line. Cone is a radial slope around the start (it rises if the target is higher, falls if lower). Ctrl + click sets another target. Height limits the change per column.
+Mantén el botón derecho y pinta sobre el terreno: los bloques bajo el pincel se suman a la selección (o se restan, según el modo).	Hold the right button and paint over the terrain: the blocks under the brush are added to the selection (or subtracted, depending on the mode).
+Mantén el botón derecho y arrastra: copia el portapapeles cada Spacing bloques, con dispersión, giro y volteo al azar, apoyado en el terreno. Ideal para bosques o rocas. No copia tile entities.	Hold the right button and drag: copies the clipboard every Spacing blocks, with random scatter, rotation and flip, resting on the terrain. Ideal for forests or rocks. It does not copy tile entities.
+0 = sol al sur, 90 = al oeste, 180 = al norte, 270 = al este.	0 = sun to the south, 90 = to the west, 180 = to the north, 270 = to the east.
+Sin luces: añade una en tu posición y muévela con las coordenadas.	No lights: add one at your position and move it with the coordinates.
+Orden de oscuro a claro. Automática: los bloques de la selección ordenados por luminosidad. Con una paleta propia, el orden es el de la ventana Palette.	Order from dark to light. Automatic: the selection blocks sorted by luminosity. With your own palette, the order is the one in the Palette window.
+Solo bloques cuyo nombre contenga alguna de estas palabras (separadas por comas). Vacío = todos.	Only blocks whose name contains any of these words (separated by commas). Empty = all.
+Quita los bloques cuyo nombre contenga alguna de estas palabras (por ejemplo: planks, log).	Removes blocks whose name contains any of these words (for example: planks, log).
+Los bloques se vuelven a colocar del centro hacia fuera. Los multiplicadores estiran la distancia en horizontal o en vertical (más de 1 = esa dirección avanza antes). 20 ticks = 1 segundo.	Blocks are placed again from the centre outwards. The multipliers stretch the distance horizontally or vertically (more than 1 = that direction advances sooner). 20 ticks = 1 second.
+Ctrl+Z cancela lo que quede por colocar y devuelve el original. Rehacer solo vuelve a vaciar la zona.	Ctrl+Z cancels what is left to place and brings back the original. Redo only empties the area again.
+Cambia el bioma de todas las columnas de la selección (en 1.12 el bioma es por columna).	Changes the biome of every column in the selection (in 1.12 the biome is per column).
+Capas de nieve sobre el terreno: más gruesas en huecos y escalones para que la cobertura sea continua. Sustituye aire y plantas bajas, no bloques.	Snow layers over the terrain: thicker in gaps and steps so the cover is continuous. Replaces air and low plants, not blocks.
+Sin selección. Box Select: clic derecho y arrastra entre dos bloques. Magic Select: clic derecho en un bloque.	No selection. Box Select: right click and drag between two blocks. Magic Select: right click on a block.
+{0} x {1} x {2} = {3} bloques (máscara)	{0} x {1} x {2} = {3} blocks (mask)
+{0} x {1} x {2} = {3} bloques	{0} x {1} x {2} = {3} blocks
+RePág / AvPág estiran hacia arriba / abajo (con Shift, encogen).	PgUp / PgDn stretch up / down (with Shift, they shrink).
+Cada bloque de aire de la selección toma el estado del bloque no aire más cercano.	Each air block in the selection takes the state of the nearest non-air block.
+Quita los bloques mal colocados (carteles o antorchas flotantes...). No suelta objetos.	Removes misplaced blocks (floating signs or torches...). It does not drop items.
+Rellena la caja con un degradado CIELAB: L en X, a (verde a rojo) en Y, b (azul a amarillo) en Z, con bloques completos y opacos.	Fills the box with a CIELAB gradient: L on X, a (green to red) on Y, b (blue to yellow) on Z, using full opaque blocks.
+Cambian la forma de la selección, no los bloques.	They change the shape of the selection, not the blocks.
+Expand ensancha la selección en todas las direcciones; Shrink la estrecha (en selecciones irregulares, por las 6 caras).	Expand widens the selection in every direction; Shrink narrows it (in irregular selections, through the 6 faces).
+Rellena los huecos y entrantes: se queda con todo lo que cae dentro del casco convexo de la selección.	Fills gaps and recesses: keeps everything inside the convex hull of the selection.
+Filter: bloque desconocido	Filter: unknown block
+Mueve solo la selección, no los bloques.	Moves only the selection, not the blocks.
+Lua Tool Mask: el script se ejecuta en cada bloque del pincel con x, y, z y las funciones del Script Brush (getBlock, isSolid, blocks...). Si devuelve true, el bloque pasa. Máximo 200 000 instrucciones por bloque.	Lua Tool Mask: the script runs on every brush block with x, y, z and the Script Brush functions (getBlock, isSolid, blocks...). If it returns true, the block passes. Maximum 200 000 instructions per block.
+Se aplica a Painter, Noise Painter, Freehand Draw, Smooth, Melt y Weld. Todas las reglas deben cumplirse.	Applies to Painter, Noise Painter, Freehand Draw, Smooth, Melt and Weld. All rules must be met.
+Vacío	Empty
+Los bloques que uses como Active Block aparecen aquí.	The blocks you use as the Active Block show up here.
+Vacía: arrastra bloques aquí, o usa Add block...	Empty: drag blocks here, or use Add block...
+Abre el selector de bloques; con Ctrl pulsado puedes elegir varios seguidos.	Opens the block picker; with Ctrl held you can pick several in a row.
+La paleta está vacía	The palette is empty
+Clic: usar como Active Block. Clic derecho sobre un bloque de una paleta: quitarlo. Arrastra bloques de Recent, de otra paleta o del Inventory hasta una paleta para añadirlos.	Click: use as Active Block. Right click on a block in a palette: remove it. Drag blocks from Recent, from another palette or from the Inventory onto a palette to add them.
+Bloque desconocido	Unknown block
+Clic central sobre un bloque del mundo: copiarlo aquí.	Middle click on a block in the world: copy it here.
+Clic en un bloque: usarlo como Active Block.	Click a block: use it as the Active Block.
+Esa vista está en otra dimensión	That view is in another dimension
+Vacío. Selecciona una zona y pulsa Ctrl+C.	Empty. Select an area and press Ctrl+C.
+{0} x {1} x {2} ({3} bloques)	{0} x {1} x {2} ({3} blocks)
+No hay archivos .schematic, .schem ni .nbt en esa carpeta.	There are no .schematic, .schem or .nbt files in that folder.
+No hay blueprints aquí. Copia algo (Ctrl+C) y pulsa Ctrl+P para guardar uno.	There are no blueprints here. Copy something (Ctrl+C) and press Ctrl+P to save one.
+Blueprint '{0}' cargado en el Clipboard ({1} bloques); {2} bloques desconocidos quedan como aire	Blueprint '{0}' loaded into the Clipboard ({1} blocks); {2} unknown blocks become air
+Blueprint '{0}' cargado en el Clipboard ({1} bloques)	Blueprint '{0}' loaded into the Clipboard ({1} blocks)
+No se pudo abrir el blueprint: {0}	Could not open the blueprint: {0}
+Carpeta dentro de la carpeta de blueprints; se crea si no existe. Vacío = raíz.	Folder inside the blueprints folder; created if it does not exist. Empty = root.
+Pon un nombre al blueprint	Give the blueprint a name
+No se pudo guardar el blueprint: {0}	Could not save the blueprint: {0}
+Sigue al cursor. Clic derecho: fijar.	Follows the cursor. Right click: fix it in place.
+Fijada. Con el botón izquierdo: flechas de colores = mover en un eje; cubo blanco = mover libre; cuadraditos = mover en dos ejes; anillos = girar (Ctrl = de 15 en 15°); cubitos claros = escalar (Ctrl = uniforme). También flechas / AvPág / RePág. Clic derecho: volver a seguir el cursor.	Fixed. With the left button: coloured arrows = move along one axis; white cube = move freely; small squares = move along two axes; rings = rotate (Ctrl = 15° steps); light cubes = scale (Ctrl = uniform). Also arrows / PgUp / PgDn. Right click: follow the cursor again.
+Dibuja la copia con sus bloques, translúcidos, además de la caja. Hasta {0} bloques; con más, o con un fallo de renderizado, solo se ve la caja. Los cofres y carteles no se dibujan.	Draws the copy with its blocks, translucent, in addition to the box. Up to {0} blocks; with more, or on a rendering failure, only the box is shown. Chests and signs are not drawn.
+Global: los ejes del gizmo son los del mundo. Local: siguen la rotación de la copia (flechas, planos y anillos); los cubitos de escala siempre siguen los ejes propios de la copia.	Global: the gizmo axes are the world axes. Local: they follow the copy's rotation (arrows, planes and rings); the scale cubes always follow the copy's own axes.
+Dos losas del mismo material en mitades opuestas forman una losa doble, y las capas de nieve se suman.	Two slabs of the same material on opposite halves form a double slab, and snow layers add up.
+Snap to ground: no hay hueco libre	Snap to ground: no free spot
+Baja la copia hasta que se apoye en el suelo (si está dentro del terreno, primero sube).	Lowers the copy until it rests on the ground (if it is inside the terrain, it rises first).
+Al girar con ángulos libres: amplía x2 alisando los bordes, gira y reduce. Los diagonales salen más limpios; con formas grandes puede no caber y entonces gira como siempre.	When rotating by free angles: upscales x2 smoothing the edges, rotates and downscales. Diagonals come out cleaner; with large shapes it may not fit and then it rotates as usual.
+Scale x2/x3 repite cada bloque en un cubo; Smooth x2/x3 es Scale2x/Scale3x: los escalones se alisan y las esquinas se redondean. Los giros que no son múltiplos de 90° usan el bloque más cercano; la orientación de escaleras o troncos solo sigue el yaw en cuartos de vuelta.	Scale x2/x3 repeats each block as a cube; Smooth x2/x3 is Scale2x/Scale3x: steps are smoothed and corners rounded. Rotations that are not multiples of 90° use the nearest block; the orientation of stairs or logs only follows the yaw in quarter turns.
+Copia algo antes de guardar un blueprint	Copy something before saving a blueprint
+Slope: objetivo fijado; arrastra desde otro bloque	Slope: target set; drag from another block
+Slope: el inicio está en la misma columna que el objetivo	Slope: the start is in the same column as the target
+Slope: diferencia de altura {0}, ángulo {1}°, distancia {2}	Slope: height difference {0}, angle {1}°, distance {2}
+Lasso: no hay bloques dentro del lazo	Lasso: no blocks inside the loop
+Lasso: la selección actual es demasiado grande para combinarla	Lasso: the current selection is too large to combine
+Lasso: {0} bloques	Lasso: {0} blocks
+Path: no hay nodos	Path: no nodes
+Text: no hay nada que dibujar o es demasiado grande	Text: nothing to draw or it is too large
+{0}: bloque desconocido en la fila {1}	{0}: unknown block in row {1}
+Freehand Select: la selección actual es demasiado grande para combinarla	Freehand Select: the current selection is too large to combine
+El bloque a reemplazar no es válido	The block to replace is not valid
+Forma demasiado grande: {0} bloques (máximo {1})	Shape too large: {0} blocks (maximum {1})
+El portapapeles está vacío	The clipboard is empty
+Importado: {0} ({1} x {2} x {3}), {4} bloques desconocidos en 1.12 (como aire)	Imported: {0} ({1} x {2} x {3}), {4} blocks unknown in 1.12 (as air)
+No se pudo importar: {0}	Could not import: {0}
+Layout guardado como el de por defecto	Layout saved as the default
+No se pudo guardar el layout: {0}	Could not save the layout: {0}
+No hay layout guardado: se restablece el de fábrica	No saved layout: the factory one is restored
+No se pudo leer el layout: {0}	Could not read the layout: {0}
+Hotbar: {0} bloques copiados	Hotbar: {0} blocks copied
+Magic Select: ese bloque no cuenta con la comparación {0}	Magic Select: that block does not count with the {0} comparison
+Magic Select: la selección actual es demasiado grande para combinarla	Magic Select: the current selection is too large to combine
+Magic Select: {0} bloques (límite alcanzado)	Magic Select: {0} blocks (limit reached)
+Magic Select: {0} bloques	Magic Select: {0} blocks
+Tool Masks: bloque desconocido en la regla {0}	Tool Masks: unknown block in rule {0}
+Modelling: no hay puntos	Modelling: no points
+Modelling: Loft necesita al menos 2 filas con puntos	Modelling: Loft needs at least 2 rows with points
+Modelling: la forma es degenerada (puntos en línea o coplanares en el casco) o pasa de {0} bloques	Modelling: the shape is degenerate (collinear or coplanar points on the hull) or exceeds {0} blocks
+Modelling: la superficie no tiene bloques	Modelling: the surface has no blocks
+Modelling: la caja de la forma es demasiado grande ({0} x {1} x {2})	Modelling: the shape box is too large ({0} x {1} x {2})
+Modelling: {0} bloques ({1} x {2} x {3})	Modelling: {0} blocks ({1} x {2} x {3})
+Modify: el resultado es demasiado grande (más de {0} bloques; ~{1})	Modify: the result is too large (more than {0} blocks; ~{1})
+No Clip activado	No Clip enabled
+No Clip desactivado	No Clip disabled
+La selección ya es un cuboide	The selection is already a cuboid
+Bounding Box: {0} bloques	Bounding Box: {0} blocks
+Shrink: la selección es demasiado pequeña	Shrink: the selection is too small
+Expand: {0} bloques	Expand: {0} blocks
+Shrink: {0} bloques	Shrink: {0} blocks
+Expand: el resultado es demasiado grande	Expand: the result is too large
+La selección ya es convexa (una caja)	The selection is already convex (a box)
+Convex Hull: la caja de la selección es demasiado grande	Convex Hull: the selection box is too large
+Convex Hull: la selección es demasiado pequeña o está en línea recta	Convex Hull: the selection is too small or in a straight line
+Convex Hull: demasiado complejo; reduce la selección	Convex Hull: too complex; reduce the selection
+Convex Hull: la selección ya era convexa	Convex Hull: the selection was already convex
+Filter: la selección es demasiado grande	Filter: the selection is too large
+Smooth: la selección es demasiado grande	Smooth: the selection is too large
+Distort: la selección es demasiado grande	Distort: the selection is too large
+{0}: el resultado es demasiado grande	{0}: the result is too large
+{0}: no queda nada seleccionado (no se ha cambiado)	{0}: nothing is left selected (unchanged)
+Sin bloque bajo el cursor	No block under the cursor
+Solo disponible en mundos de un jugador.	Only available in singleplayer worlds.
+(creativo: atraviesas bloques volando)	(creative: you pass through blocks while flying)
+Aún no ha actuado: muévete. Si sigue sin atravesar bloques, los mixins no se aplicaron (mira logs/latest.log).	It has not acted yet: move around. If you still cannot pass through blocks, the mixins were not applied (check logs/latest.log).
+Sin heightmap: se usa el desvanecido suave.	No heightmap: the soft falloff is used.
+Cargando...	Loading...
+Heightmap {0} x {1} activo	Heightmap {0} x {1} active
+Copia la selección Count veces con ese desplazamiento (como Stack, pero en cualquier dirección).	Copies the selection Count times with that offset (like Stack, but in any direction).
+Copias giradas alrededor del eje que pasa por el pivote; Equidistant reparte Count copias más la original en 360°. Add Translation desplaza la última copia (en Y da una espiral).	Copies rotated around the axis through the pivot; Equidistant spreads Count copies plus the original over 360°. Add Translation shifts the last copy (on Y it makes a spiral).
+Enrolla la selección en un arco: su longitud (eje {0}) es el ángulo y su profundidad (eje {1}) el radio, desde Inner radius. Add Translation hace una espiral.	Rolls the selection into an arc: its length (axis {0}) is the angle and its depth (axis {1}) the radius, from Inner radius. Add Translation makes a spiral.
+Gira cada capa más que la anterior alrededor del eje que pasa por el pivote: Angle es el giro total de abajo a arriba.	Rotates each layer more than the previous one around the axis through the pivot: Angle is the total twist from bottom to top.
+Portapapeles vacío (Copy primero)	Clipboard empty (Copy first)
+por {0}	by {0}
+{0} (límite alcanzado)	{0} (limit reached)
+lo pone como Active Block	sets it as the Active Block
+lo pone en la mano (ranura actual de la hotbar)	puts it in your hand (current hotbar slot)
+Clic derecho con la mano vacía cambia el estado del bloque (Ctrl: bloque, escalera y losa del mismo material).	Right click with an empty hand changes the block state (Ctrl: block, stair and slab of the same material).
+Coloca y rompe sin avisar a los bloques vecinos.	Places and breaks without notifying neighbouring blocks.
+Coloca saltándose las restricciones (soporte, entidades).	Places skipping restrictions (support, entities).
+Clic derecho sustituye el bloque apuntado por el de la mano, heredando sus propiedades.	Right click replaces the targeted block with the one in hand, inheriting its properties.
+Mantén el botón izquierdo: tras un instante rompe bloques muy rápido.	Hold the left button: after a moment it breaks blocks very fast.
+Apunta, rompe y coloca a cualquier distancia (hasta el límite de la Toolbox).	Aim, break and place at any distance (up to the Toolbox limit).
+Sin pausa entre colocaciones.	No pause between placements.
+Coloca bloques en el aire, a la distancia de la Toolbox, sin bloque de apoyo.	Places blocks in the air, at the Toolbox distance, without a supporting block.
+Atraviesas bloques volando.	You pass through blocks while flying.
+Archivo no válido (tamaño cero)	Invalid file (zero size)
+Archivo no válido: {0}	Invalid file: {0}
+Estructura no válida (sin tamaño)	Invalid structure (no size)
+Schematic no válido (las dimensiones no coinciden con los datos)	Invalid schematic (the dimensions do not match the data)
+formato de imagen no reconocido	unrecognised image format
+La carpeta debe estar dentro de la carpeta de blueprints	The folder must be inside the blueprints folder
+el script ha tardado demasiado (más de {0} instrucciones en un sello)	the script took too long (more than {0} instructions in one stamp)
+el script ha colocado demasiados bloques en un sello (máximo {0})	the script placed too many blocks in one stamp (maximum {0})
+Script: {0}	Script: {0}
+Tool Masks (Lua), regla {0}: {1}	Tool Masks (Lua), rule {0}: {1}
+-- Cambia parte de la hierba por tierra, en manchas de ruido.	-- Turns some of the grass into dirt, in noise patches.
+-- x, y, z es el bloque que se está procesando; si devuelves un id de bloque, se coloca ahí.	-- x, y, z is the block being processed; if you return a block id, it is placed there.
+local umbral = $float(Umbral, 0.6, 0, 1)$	local threshold = $float(Threshold, 0.6, 0, 1)$
+  if getSimplexNoise(x / 6, y / 6, z / 6, 1) > umbral then	  if getSimplexNoise(x / 6, y / 6, z / 6, 1) > threshold then
+-- Una columna sobre el bloque apuntado, una vez por clic.	-- A column above the targeted block, once per click.
+local altura = $int(Altura, 6, 1, 20)$	local height = $int(Height, 6, 1, 20)$
+local bloque = $blockState(Bloque, minecraft:stone)$	local block = $blockState(Block, minecraft:stone)$
+for i = 1, altura do	for i = 1, height do
+  setBlock(x, y + i, z, bloque)	  setBlock(x, y + i, z, block)
+-- Los bloques sólidos pasan a cobblestone donde el ruido es alto.	-- Solid blocks become cobblestone where the noise is high.
+-- x, y, z: el bloque que se evalúa. Devuelve true para dejarlo pasar.	-- x, y, z: the block being evaluated. Return true to let it through.

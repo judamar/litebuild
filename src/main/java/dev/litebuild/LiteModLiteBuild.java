@@ -20,9 +20,9 @@ import net.minecraft.client.settings.KeyBinding;
 public class LiteModLiteBuild implements LiteMod, Tickable, ShutdownListener, PostRenderListener, HUDRenderListener {
     public static final Logger LOG = LogManager.getLogger("LiteBuild");
 
-    private final KeyBinding openEditor = new KeyBinding("Abrir editor", Keyboard.KEY_RSHIFT, "LiteBuild");
-    private final KeyBinding noClipKey = new KeyBinding("Alternar No Clip", Keyboard.KEY_NONE, "LiteBuild");
-    private final KeyBinding builderMenu = new KeyBinding("Menú de Builder", Keyboard.KEY_B, "LiteBuild");
+    private final KeyBinding openEditor = new KeyBinding("Open editor", Keyboard.KEY_RSHIFT, "LiteBuild");
+    private final KeyBinding noClipKey = new KeyBinding("Toggle No Clip", Keyboard.KEY_NONE, "LiteBuild");
+    private final KeyBinding builderMenu = new KeyBinding("Builder menu", Keyboard.KEY_B, "LiteBuild");
     /** Una tecla por capability (la de Replace Mode es R, como en Axiom); No Clip tiene la suya aparte. */
     private final KeyBinding[] capabilityKeys = new KeyBinding[8];
     /** El código de la tecla del menú de Builder (para que la propia pantalla se cierre con ella). */
@@ -35,7 +35,7 @@ public class LiteModLiteBuild implements LiteMod, Tickable, ShutdownListener, Po
 
     @Override
     public String getVersion() {
-        return "0.30.1";
+        return "0.31.0";
     }
 
     @Override

@@ -18,6 +18,8 @@ public final class UiSettings {
     public static float fontSize = 16f;
     public static int theme = 0;
     public static int layout = 0;
+    /** Idioma de la interfaz: 0 Auto, 1 English, 2 Español (ver {@link I18n}). */
+    public static int language = 0;
     /** Brillo mínimo del mundo en el editor (0 = el de las opciones, 1 = todo iluminado). */
     public static float minBrightness = 0f;
     /** Opacidad del agua (0-1); negativo = la de vanilla. */
@@ -41,6 +43,8 @@ public final class UiSettings {
             fontSize = Math.max(10f, Math.min(32f, Float.parseFloat(p.getProperty("fontSize", "16"))));
             theme = Integer.parseInt(p.getProperty("theme", "0"));
             layout = Integer.parseInt(p.getProperty("layout", "0"));
+            language = Math.max(0, Math.min(I18n.LANGUAGES.length - 1, Integer.parseInt(p.getProperty("language", "0"))));
+            I18n.set(language);
             minBrightness = Math.max(0f, Math.min(1f, Float.parseFloat(p.getProperty("minBrightness", "0"))));
             fluidOpacity = Float.parseFloat(p.getProperty("fluidOpacity", "-1"));
         } catch (IOException | NumberFormatException e) {
@@ -55,6 +59,7 @@ public final class UiSettings {
         p.setProperty("fontSize", Float.toString(fontSize));
         p.setProperty("theme", Integer.toString(theme));
         p.setProperty("layout", Integer.toString(layout));
+        p.setProperty("language", Integer.toString(language));
         p.setProperty("minBrightness", Float.toString(minBrightness));
         p.setProperty("fluidOpacity", Float.toString(fluidOpacity));
         try (OutputStream out = new FileOutputStream(f)) {

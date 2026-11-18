@@ -162,6 +162,7 @@ public class EditorScreen extends GuiScreen {
     private final ImBoolean extrudeShrink = new ImBoolean(false);
     private final ImString schemName = new ImString("build", 64);
     private final ImInt themeUi = new ImInt(0);
+    private final ImInt languageUi = new ImInt(0);
     private final int[] fontUi = {16};
     private List<String> schemFiles = new ArrayList<String>();
     private IBlockState activeState;
@@ -241,7 +242,7 @@ public class EditorScreen extends GuiScreen {
     private final ImBoolean sculptDenoise = new ImBoolean(true);
     private BlockPos slopeFrom;
     private boolean slopeConeDone;
-    private final ImString scriptCode = new ImString(ScriptBrush.EXAMPLES[0], 16384);
+    private final ImString scriptCode = new ImString(I18n.tr(ScriptBrush.EXAMPLES[0]), 16384);
     private ScriptBrush.Spec scriptSpec;
     private String scriptCheck;
     private boolean settingsLoaded;
@@ -371,6 +372,7 @@ public class EditorScreen extends GuiScreen {
         if (!settingsLoaded) {
             settingsLoaded = true;
             themeUi.set(UiSettings.theme);
+            languageUi.set(UiSettings.language);
             fontUi[0] = Math.round(UiSettings.fontSize);
             needLayout = UiSettings.layout < UiSettings.LAYOUT_VERSION;
         }
@@ -571,7 +573,7 @@ public class EditorScreen extends GuiScreen {
             ImGui.sameLine();
             String fps = String.format(Locale.ROOT, "%.0f FPS", ImGui.getIO().getFramerate());
             float fpsX = ImGui.getWindowWidth() - ImGui.calcTextSizeX(fps) - ImGui.getStyle().getWindowPaddingX();
-            String msg = EditEngine.status;
+            String msg = I18n.tr(EditEngine.status);
             float avail = fpsX - ImGui.getCursorPosX() - 2 * ImGui.getStyle().getItemSpacingX();
             String shown = msg;
             while (shown.length() > 4 && ImGui.calcTextSizeX(shown) > avail) {
@@ -755,6 +757,12 @@ public class EditorScreen extends GuiScreen {
             if (ImGui.combo("Theme", themeUi, Theme.NAMES)) {
                 UiSettings.theme = themeUi.get();
                 Theme.apply(UiSettings.theme);
+                UiSettings.save();
+            }
+            ImGui.setNextItemWidth(160);
+            if (ImGui.combo("Language", languageUi, I18n.LANGUAGES)) {
+                I18n.set(languageUi.get());
+                UiSettings.language = languageUi.get();
                 UiSettings.save();
             }
             ImGui.setNextItemWidth(160);
@@ -1043,7 +1051,7 @@ public class EditorScreen extends GuiScreen {
         ImGui.separatorText("Script (Lua)");
         int ex = buttonRow(suffixed(ScriptBrush.EXAMPLE_NAMES, "ex"));
         if (ex >= 0) {
-            scriptCode.set(ScriptBrush.EXAMPLES[ex]);
+            scriptCode.set(I18n.tr(ScriptBrush.EXAMPLES[ex]));
             scriptCheck = null;
         }
         ImGui.inputTextMultiline("##script", scriptCode, ImGui.getContentRegionAvailX(), ImGui.getFrameHeight() * 11);
