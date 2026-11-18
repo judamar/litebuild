@@ -1,0 +1,107 @@
+name: Release
+
+# Al subir una etiqueta vX.Y.Z (o vX.Y.Z-rc1...) compila, pasa los tests y crea una release de GitHub con el .litemod.
+#   git tag v1.0.0 && git push origin v1.0.0
+# La versión de la etiqueta tiene que ser la de build.gradle (version = '1.0.0') y el commit tiene que estar en main.
+# Si hay un CHANGELOG.md con una sección "## 1.0.0" (o "## [1.0.0]"), sus líneas son las notas; si no, se generan solas.
+# Una etiqueta con guion (v1.0.0-rc1) se marca como prerelease.
+# "Run workflow" a mano hace todo menos publicar: sirve para ver que la compilación y las comprobaciones pasan.
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Versión y etiqueta
+        id: meta
+        run: |
+          VERSION=$(sed -n "s/^version = '\(.*\)'.*/\1/p" build.gradle | head -n 1)
+          [ -n "$VERSION" ] || { echo "::error::No se encontró version en build.gradle"; exit 1; }
+          if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+            TAG="$GITHUB_REF_NAME"
+            if [ "$TAG" != "v$VERSION" ]; then
+              echo "::error::La etiqueta $TAG no coincide con la versión de build.gradle ($VERSION). Sube la versión, haz commit y vuelve a etiquetar."
+              exit 1
+            fi
+            git fetch origin main
+            if ! git merge-base --is-ancestor "$GITHUB_SHA" origin/main; then
+              echo "::error::El commit de $TAG no está en main."
+              exit 1
+            fi
+          else
+            TAG="v$VERSION"
+          fi
+          case "$VERSION" in *-*) PRE=true ;; *) PRE=false ;; esac
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "prerelease=$PRE" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '8'
+
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: gradle-${{ runner.os }}-${{ hashFiles('build.gradle', 'settings.gradle', 'gradle/wrapper/gradle-wrapper.properties') }}
+          restore-keys: |
+            gradle-${{ runner.os }}-
+
+      - name: Compilar y ejecutar los tests
+        run: ./gradlew build --stacktrace
+
+      - name: Archivos de la release
+        id: files
+        run: |
+          JAR="build/libs/mod-litebuild-${{ steps.meta.outputs.version }}-mc1.12.2.litemod"
+          [ -f "$JAR" ] || { echo "::error::No existe $JAR"; ls build/libs; exit 1; }
+          mkdir -p dist
+          cp "$JAR" dist/
+          (cd dist && sha256sum *.litemod > SHA256SUMS.txt && cat SHA256SUMS.txt)
+          # Notas: la sección del CHANGELOG de esta versión, si existe.
+          if [ -f CHANGELOG.md ]; then
+            awk -v v="${{ steps.meta.outputs.version }}" '
+              $0 == "## " v || index($0, "## " v " ") == 1 || index($0, "## [" v "]") == 1 { p = 1; next }
+              /^## / { p = 0 }
+              p' CHANGELOG.md > notes.md
+          fi
+          if [ -s notes.md ]; then echo "notes=true" >> "$GITHUB_OUTPUT"; else echo "notes=false" >> "$GITHUB_OUTPUT"; fi
+
+      - name: Guardar los archivos (también en la ejecución manual)
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ steps.meta.outputs.version }}
+          path: dist/
+          if-no-files-found: error
+
+      - name: Publicar la release
+        if: github.event_name == 'push'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ steps.meta.outputs.tag }}
+          VERSION: ${{ steps.meta.outputs.version }}
+          PRERELEASE: ${{ steps.meta.outputs.prerelease }}
+          HAS_NOTES: ${{ steps.files.outputs.notes }}
+        run: |
+          ARGS=(--title "LiteBuild $VERSION" --verify-tag)
+          [ "$PRERELEASE" = "true" ] && ARGS+=(--prerelease)
+          if [ "$HAS_NOTES" = "true" ]; then ARGS+=(--notes-file notes.md); else ARGS+=(--generate-notes); fi
+          gh release create "$TAG" dist/*.litemod dist/SHA256SUMS.txt "${ARGS[@]}"

@@ -1,0 +1,19 @@
+LiteBuild
+Copyright (c) 2026 judamar. Todos los derechos reservados.
+Copyright (c) 2026 judamar. All rights reserved.
+
+Este software y su código fuente son de uso interno. No se concede ningún
+permiso para copiarlo, modificarlo, distribuirlo ni usarlo fuera de quien lo
+mantiene, salvo permiso previo y por escrito del titular.
+
+This software and its source code are for internal use. No permission is
+granted to copy, modify, distribute or use it outside of its maintainer
+without the prior written permission of the copyright holder.
+
+Los componentes de terceros que van dentro del .jar mantienen sus propias
+licencias (MIT); ver THIRD-PARTY-NOTICES.md.
+Third-party components bundled in the .jar keep their own (MIT) licences; see
+THIRD-PARTY-NOTICES.md.
+
+EL SOFTWARE SE ENTREGA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO.
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND.

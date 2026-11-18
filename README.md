@@ -21,6 +21,16 @@ Compila, reofusca y copia `mod-litebuild-*.litemod` a la instancia de Prism indi
 
 Pruebas JUnit de las clases que no dependen de Minecraft (`src/test/java`): `FluidFlow` (flujo, Quality y Fill Edges), `VoxelScale` (Scale2x/3x con bordes y reducción), `VoxelRay` (rayo de Expand Hitboxes, contra una marcha fina), `Euler` (giros del gizmo Local), `Mesh` (Smart Surface y Delaunay), `Hull3D` y `LuaHighlight`. `./gradlew build` también las ejecuta. Lo que toca el juego (render, mixins, gizmo en pantalla) solo se prueba dentro de él.
 
+## Releases
+
+Se publican al subir una etiqueta (`.github/workflows/release.yml`): sube `version` en `build.gradle` y en `LiteModLiteBuild.getVersion()`, añade su sección `## <versión>` al `CHANGELOG.md` (son las notas de la release), haz commit en `main` y:
+
+```sh
+git tag v1.0.0-rc1 && git push origin v1.0.0-rc1
+```
+
+La etiqueta tiene que ser `v` + la versión de `build.gradle`. Una versión con guion (`1.0.0-rc1`) se publica como prerelease. La release lleva el `.litemod` y `SHA256SUMS.txt`. *Run workflow* a mano hace todo menos publicar.
+
 ## Probar
 
 Abrir la instancia `axiom-dev` en Prism, entrar en un mundo de un jugador y pulsar **Right Shift** para abrir el editor. Escape o Right Shift lo cierran.
@@ -142,7 +152,9 @@ Solo funciona en mundos de un jugador (edita el mundo del servidor integrado). U
 
 **Independiente de Axiom.** LiteBuild es una reimplementación propia: no contiene código, recursos ni texturas de Axiom, no se ha decompilado ni examinado su `.jar` (el EULA de Axiom prohíbe la ingeniería inversa y las obras derivadas de su software, §3.3 y §5.3) y no tiene relación con su autor. Las funciones se han escrito a partir de la documentación pública de Axiom (<https://axiomdocs.moulberry.com/>); las ideas y el comportamiento no están protegidos, el código sí, y todo el código de este proyecto es propio. «Axiom» se nombra solo para decir de qué se inspira.
 
-**Uso.** El proyecto es interno y no se distribuye. Antes de publicarlo o compartirlo: quitar o reescribir la carpeta `docs/` (son resúmenes y traducciones de la documentación de Axiom, que tiene sus propios derechos de autor), revisar el nombre y los textos de la interfaz y añadir los avisos de licencia de lo que va empaquetado en el `.jar`.
+**Licencia.** `LICENSE`: todos los derechos reservados, uso interno. Los avisos de lo que va empaquetado están en `THIRD-PARTY-NOTICES.md` y se copian dentro del `.litemod` (`META-INF/`). Si algún día se comparte, hay que cambiar `LICENSE` por la que se elija (MIT o Apache-2.0, por ejemplo).
+
+**Antes de publicarlo o compartirlo:** quitar o reescribir la carpeta `docs/` (son resúmenes y traducciones de la documentación de Axiom, que tiene sus propios derechos de autor) y revisar el nombre y los textos de la interfaz. El repositorio es privado y las releases solo llevan el `.litemod`.
 
 **Lo que va dentro del `.jar`** (copiado por el plugin de Gradle, ver `build.gradle`):
 
