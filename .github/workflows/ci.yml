@@ -21,7 +21,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: '8'
@@ -50,6 +50,6 @@ jobs:
       - name: Mod compilado
         uses: actions/upload-artifact@v4
         with:
-          name: litbuild-litemod
-          path: build/libs/mod-litbuild-*-mc1.12.2.litemod
+          name: litebuild-litemod
+          path: build/libs/mod-litebuild-*-mc1.12.2.litemod
           if-no-files-found: error

@@ -1,0 +1,64 @@
+{
+  "mappings": {
+    "dev/litebuild/mixin/MixinEntity": {
+      "move": "Lvg;a(Lvv;DDD)V",
+      "isEntityInsideOpaqueBlock": "Lvg;aD()Z"
+    },
+    "dev/litebuild/mixin/MixinEntityPlayerSP": {
+      "pushOutOfBlocks": "Lbud;i(DDD)Z"
+    },
+    "dev/litebuild/mixin/MixinBlockFalling": {
+      "checkFallable": "Laqm;b(Lamu;Let;)V"
+    },
+    "dev/litebuild/mixin/MixinBlockFarmland": {
+      "onFallenUpon": "Laqn;a(Lamu;Let;Lvg;F)V"
+    },
+    "dev/litebuild/mixin/MixinMinecraft": {
+      "clickMouse": "Lbib;aA()V",
+      "rightClickMouse": "Lbib;aB()V",
+      "middleClickMouse": "Lbib;aH()V",
+      "sendClickBlockToController": "Lbib;b(Z)V"
+    },
+    "dev/litebuild/mixin/MixinInventoryPlayer": {
+      "changeCurrentItem": "Laec;f(I)V"
+    },
+    "dev/litebuild/mixin/MixinPlayerControllerMP": {
+      "getBlockReachDistance": "Lbsa;d()F"
+    },
+    "dev/litebuild/mixin/MixinBlockLiquid": {
+      "canCollideCheck": "Laru;a(Lawt;Z)Z"
+    }
+  },
+  "data": {
+    "notch": {
+      "dev/litebuild/mixin/MixinEntity": {
+        "move": "Lvg;a(Lvv;DDD)V",
+        "isEntityInsideOpaqueBlock": "Lvg;aD()Z"
+      },
+      "dev/litebuild/mixin/MixinEntityPlayerSP": {
+        "pushOutOfBlocks": "Lbud;i(DDD)Z"
+      },
+      "dev/litebuild/mixin/MixinBlockFalling": {
+        "checkFallable": "Laqm;b(Lamu;Let;)V"
+      },
+      "dev/litebuild/mixin/MixinBlockFarmland": {
+        "onFallenUpon": "Laqn;a(Lamu;Let;Lvg;F)V"
+      },
+      "dev/litebuild/mixin/MixinMinecraft": {
+        "clickMouse": "Lbib;aA()V",
+        "rightClickMouse": "Lbib;aB()V",
+        "middleClickMouse": "Lbib;aH()V",
+        "sendClickBlockToController": "Lbib;b(Z)V"
+      },
+      "dev/litebuild/mixin/MixinInventoryPlayer": {
+        "changeCurrentItem": "Laec;f(I)V"
+      },
+      "dev/litebuild/mixin/MixinPlayerControllerMP": {
+        "getBlockReachDistance": "Lbsa;d()F"
+      },
+      "dev/litebuild/mixin/MixinBlockLiquid": {
+        "canCollideCheck": "Laru;a(Lawt;Z)Z"
+      }
+    }
+  }
+}

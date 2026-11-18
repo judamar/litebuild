@@ -14,8 +14,8 @@ buildscript {
 apply plugin: 'net.minecraftforge.gradle.liteloader'
 
 version = '0.30.1'
-group = 'dev.litbuild'
-archivesBaseName = 'litbuild'
+group = 'dev.litebuild'
+archivesBaseName = 'litebuild'
 sourceCompatibility = targetCompatibility = '1.8'
 
 minecraft {
@@ -26,12 +26,12 @@ minecraft {
 
 litemod {
     json {
-        name = 'litbuild'
-        displayName = 'LitBuild'
+        name = 'litebuild'
+        displayName = 'LiteBuild'
         version = project.version
         author = 'judamar'
         mcversion = '1.12.2'
-        mixinConfigs = ['mixins.litbuild.json']
+        mixinConfigs = ['mixins.litebuild.json']
     }
 }
 
@@ -39,7 +39,7 @@ repositories {
     mavenCentral()
 }
 
-// Sin procesador de anotaciones de Mixin: el refmap (src/main/resources/mixins.litbuild.refmap.json) va a mano.
+// Sin procesador de anotaciones de Mixin: el refmap (src/main/resources/mixins.litebuild.refmap.json) va a mano.
 tasks.withType(JavaCompile) {
     options.compilerArgs += ['-proc:none']
 }
@@ -73,7 +73,8 @@ task installMod(dependsOn: 'build') {
         def dest = file("${prismInstance}/.minecraft/mods")
         dest.mkdirs()
         delete fileTree(dir: dest, include: "mod-${archivesBaseName}-*.litemod")
-        delete fileTree(dir: dest, include: "mod-axiomlite-*.litemod")   // nombre anterior del mod
+        delete fileTree(dir: dest, include: "mod-litbuild-*.litemod")     // nombre anterior del mod
+        delete fileTree(dir: dest, include: "mod-axiomlite-*.litemod")    // nombre aún anterior
         copy {
             from jar.archivePath
             into dest

@@ -1,0 +1,20 @@
+{
+	"required": false,
+	"package": "dev.litebuild.mixin",
+	"compatibilityLevel": "JAVA_8",
+	"minVersion": "0.7",
+	"refmap": "mixins.litebuild.refmap.json",
+	"client": [
+		"MixinEntity",
+		"MixinEntityPlayerSP",
+		"MixinBlockFalling",
+		"MixinBlockFarmland",
+		"MixinMinecraft",
+		"MixinInventoryPlayer",
+		"MixinPlayerControllerMP",
+		"MixinBlockLiquid"
+	],
+	"injectors": {
+		"defaultRequire": 0
+	}
+}
