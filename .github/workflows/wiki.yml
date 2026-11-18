@@ -1,0 +1,42 @@
+name: Wiki
+
+# Copia la carpeta wiki/ a la wiki de GitHub (litebuild.wiki.git) en cada push a main que la toque.
+# Los enlaces internos pasan de "Pagina.md" a "Pagina" porque la wiki de GitHub enlaza por nombre de página.
+# Reemplaza todo el contenido de la wiki: se edita siempre wiki/, no la wiki en la web.
+# La primera página de la wiki hay que crearla una vez desde la web (el repo de la wiki no existe antes).
+on:
+  push:
+    branches: [main]
+    paths: ['wiki/**', '.github/workflows/wiki.yml']
+  workflow_dispatch:
+
+concurrency:
+  group: wiki-sync
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Publicar wiki/ en la wiki de GitHub
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git clone "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.wiki.git" "$RUNNER_TEMP/wiki"
+          find "$RUNNER_TEMP/wiki" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+          for f in wiki/*.md; do
+            sed -E 's/\]\(([A-Za-z0-9_-]+)\.md(#[^)]*)?\)/](\1\2)/g' "$f" > "$RUNNER_TEMP/wiki/$(basename "$f")"
+          done
+          cd "$RUNNER_TEMP/wiki"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then echo "La wiki ya está al día."; exit 0; fi
+          git commit -q -m "Wiki sincronizada desde ${GITHUB_SHA::7}"
+          git push

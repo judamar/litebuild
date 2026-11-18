@@ -2,7 +2,7 @@
 
 **Inspirado en [Axiom](https://axiomdocs.moulberry.com/)**, el mod de edición de mundo de Moulberry. LiteBuild es un mod cliente para Minecraft 1.12.2 con LiteLoader que reimplementa por su cuenta funciones parecidas, a partir de la documentación pública de Axiom y sin usar su código (no está afiliado a Axiom ni a su autor). La interfaz usa Dear ImGui (imgui-java) con un backend propio para LWJGL 2.
 
-**Documentación y tutoriales:** carpeta [`wiki/`](wiki/Home.md) (instalación, primeros pasos, tutoriales, referencia de cada herramienta, Lua, Builder Mode y solución de problemas). Este README es la referencia técnica resumida de las funciones.
+**Documentación y tutoriales:** [wiki de GitHub](https://github.com/judamar/litebuild/wiki), que es una copia de la carpeta [`wiki/`](wiki/Home.md) (instalación, primeros pasos, tutoriales, referencia de cada herramienta, Lua, Builder Mode y solución de problemas). Este README es la referencia técnica resumida de las funciones.
 
 ## Compilar e instalar
 

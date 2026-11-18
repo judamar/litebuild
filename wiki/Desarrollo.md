@@ -62,6 +62,14 @@ En `.github/workflows`:
 - **`rebuild-desde-cero.yml`:** semanal, sin caché.
 - **`release.yml`:** al subir una etiqueta (ver abajo).
 
+## Wiki
+
+La fuente de la wiki es la carpeta `wiki/` del repositorio (Markdown, con enlaces relativos `Pagina.md` que funcionan al navegar el repo). La **wiki de GitHub** es una copia que mantiene `.github/workflows/wiki.yml`: en cada push a `main` que toque `wiki/**` quita el `.md` de los enlaces internos (la wiki de GitHub enlaza por nombre de página) y sube las páginas al repositorio `litebuild.wiki.git`.
+
+- **Edita siempre `wiki/`**, no la wiki en la web: la sincronización reemplaza todo el contenido de la wiki de GitHub, incluidas las páginas borradas aquí.
+- *Run workflow* en la pestaña Actions la sincroniza a mano.
+- Para un repositorio nuevo, la primera página hay que crearla una vez desde la web de GitHub (el repo de la wiki no existe hasta entonces).
+
 ## Releases
 
 1. Sube `version` en `build.gradle` **y** en `LiteModLiteBuild.getVersion()`.
