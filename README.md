@@ -2,6 +2,8 @@
 
 Mod cliente para Minecraft 1.12.2 con LiteLoader, inspirado en la funcionalidad de Axiom (reimplementación propia a partir de su documentación pública, ver `docs/`). La interfaz usa Dear ImGui (imgui-java) con un backend propio para LWJGL 2.
 
+**Documentación y tutoriales:** carpeta [`wiki/`](wiki/Home.md) (instalación, primeros pasos, tutoriales, referencia de cada herramienta, Lua, Builder Mode y solución de problemas). Este README es la referencia técnica resumida de las funciones.
+
 ## Compilar e instalar
 
 Requiere Java 8 (el wrapper de Gradle es 4.9, que no corre en Java 17):
